@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Formação Profissional em Treinamento Vocal</title>
+<style>
+:root{
+  --ink:#16202A; --ink-soft:#3C4A57; --paper:#FAF7F2; --paper-2:#F0EBE0;
+  --gold:#C98A3E; --gold-dark:#8C5C20; --teal:#2F6F6B; --teal-dark:#1E4E4B; --line:#DCD4C2;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.6;}
+.wrap{max-width:880px;margin:0 auto;padding:0 22px;}
+header.hero{background:var(--ink);color:var(--paper);padding:64px 22px 56px;position:relative;overflow:hidden;}
+header.hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:5px;background:linear-gradient(90deg,var(--gold),var(--teal));}
+.hero-inner{max-width:760px;margin:0 auto;}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:700;}
+h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(28px,5vw,42px);margin:10px 0 14px;font-weight:700;line-height:1.15;}
+.lede{font-size:16px;color:#CCD4D8;max-width:560px;}
+.waveform{display:flex;align-items:flex-end;gap:3px;height:26px;margin:26px 0;}
+.waveform span{display:block;width:3px;background:var(--gold);opacity:.85;border-radius:2px;}
+.cta{display:inline-block;margin-top:6px;font-weight:700;font-size:15px;padding:14px 26px;border-radius:8px;background:var(--gold);color:#241500;text-decoration:none;}
+.cta:hover{background:#fff;}
+main{padding:48px 0 70px;}
+section{margin-bottom:48px;}
+h2{font-family:Georgia,"Times New Roman",serif;font-size:22px;margin:0 0 14px;color:var(--ink);}
+p{font-size:15px;color:var(--ink-soft);margin:0 0 12px;max-width:640px;}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:18px;}
+@media(max-width:600px){.grid{grid-template-columns:1fr;}}
+.areacard{border:1px solid var(--line);border-radius:10px;padding:16px 18px;background:#fff;}
+.areacard .pts{display:inline-block;font-size:11px;font-weight:700;color:var(--teal-dark);background:#E1F0EE;padding:2px 9px;border-radius:20px;margin-bottom:6px;}
+.areacard h3{font-size:15px;margin:0 0 4px;}
+.areacard p{font-size:13px;margin:0;}
+.steps{display:flex;flex-direction:column;gap:18px;margin-top:18px;}
+.step{display:flex;gap:16px;align-items:flex-start;}
+.stepnum{flex:0 0 auto;width:34px;height:34px;border-radius:50%;background:var(--paper-2);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-family:Georgia,serif;color:var(--gold-dark);}
+.step h3{font-size:15px;margin:0 0 4px;}
+.step p{font-size:13.5px;margin:0;}
+.matrix{border-collapse:collapse;width:100%;margin-top:14px;font-size:13.5px;}
+.matrix th,.matrix td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--paper-2);}
+.matrix th{color:var(--ink-soft);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.04em;}
+footer.cta-final{background:var(--paper-2);padding:48px 22px;text-align:center;border-top:1px solid var(--line);}
+footer.cta-final h2{margin-bottom:8px;}
+footer.cta-final p{margin:0 auto 20px;}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Formação Profissional em Treinamento Vocal</div>
+    <h1>Ciência da Voz Aplicada ao Ensino do Canto</h1>
+    <p class="lede">Um diagnóstico de competências para professores e treinadores vocais que querem sair da intuição e construir uma prática baseada em anatomia, fisiologia, acústica e raciocínio clínico-pedagógico.</p>
+    <div class="waveform" id="wave"></div>
+    <a class="cta" href="dossie-diagnostico-treinamento-vocal.html">Iniciar o diagnóstico</a>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section>
+    <h2>Sobre a formação</h2>
+    <p>O treinamento vocal eficaz não nasce só da experiência de palco — exige compreender como o corpo produz, sustenta e modifica a voz. Esta formação conecta a ciência da voz (vocologia) à prática de sala de aula, dando ao professor ferramentas para identificar a causa real de um problema vocal, e não apenas o sintoma.</p>
+    <p>O dossiê diagnóstico é o ponto de partida: ele mapeia o que você já domina e onde estão as lacunas, para que a formação seja construída sobre a sua base real de conhecimento.</p>
+  </section>
+
+  <section>
+    <h2>Para quem é</h2>
+    <p>Professores de canto, treinadores vocais e profissionais correlatos (música, fonoaudiologia, educação musical, musicoterapia) que já ensinam ou cantam e querem aprofundar a base técnica e científica do seu trabalho — independente do estilo musical em que atuam (gospel, pop, MPB, rock, sertanejo, teatro musical, erudito, coral, entre outros).</p>
+  </section>
+
+  <section>
+    <h2>O que o diagnóstico avalia</h2>
+    <p>O dossiê é corrigido em sete áreas, com peso proporcional à importância de cada uma na prática do treinador vocal:</p>
+    <div class="grid">
+      <div class="areacard"><span class="pts">15 pontos</span><h3>Anatomia</h3><p>Sistema respiratório, diafragma, laringe, pregas vocais e musculatura intrínseca.</p></div>
+      <div class="areacard"><span class="pts">15 pontos</span><h3>Fisiologia</h3><p>Respiração, fonação, ressonância e articulação.</p></div>
+      <div class="areacard"><span class="pts">15 pontos</span><h3>Acústica</h3><p>Frequência, harmônicos, formantes e singer's formant.</p></div>
+      <div class="areacard"><span class="pts">10 pontos</span><h3>Saúde vocal</h3><p>Fatores de risco, sinais de alerta e critérios de encaminhamento clínico.</p></div>
+      <div class="areacard"><span class="pts">10 pontos</span><h3>Diagnóstico</h3><p>Identificação de soprosidade, compressão, quebras, fadiga e nasalidade.</p></div>
+      <div class="areacard"><span class="pts">15 pontos</span><h3>Pedagogia e planejamento</h3><p>Avaliação inicial, progressão, prescrição de exercícios e correção de erros.</p></div>
+    </div>
+    <div class="areacard" style="margin-top:14px;">
+      <span class="pts">20 pontos</span><h3>Raciocínio clínico-pedagógico</h3>
+      <p>Onze estudos de caso reais, em que você analisa hipóteses funcionais e propõe intervenções para alunos de diferentes estilos, idades e queixas vocais.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Como funciona</h2>
+    <div class="steps">
+      <div class="step"><div class="stepnum">1</div><div><h3>Preencha o dossiê</h3><p>Leva entre 40 e 70 minutos. Pode ser feito em mais de uma sessão — não há perguntas certas ou erradas, é um retrato honesto do seu conhecimento atual.</p></div></div>
+      <div class="step"><div class="stepnum">2</div><div><h3>Envie suas respostas</h3><p>Um clique e está pronto. Não é preciso criar conta nem instalar nada.</p></div></div>
+      <div class="step"><div class="stepnum">3</div><div><h3>Receba a devolutiva</h3><p>O professor corrige por área e te devolve sua classificação e os pontos de atenção da formação.</p></div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Matriz de classificação final</h2>
+    <table class="matrix">
+      <tr><th>Faixa</th><th>Classificação</th></tr>
+      <tr><td>0–25%</td><td>Professor Intuitivo — ensina pela experiência</td></tr>
+      <tr><td>26–50%</td><td>Professor Técnico — possui bases conceituais</td></tr>
+      <tr><td>51–75%</td><td>Professor Avançado — correlaciona teoria e prática</td></tr>
+      <tr><td>76–90%</td><td>Treinador Vocal — diagnóstico funcional consistente</td></tr>
+      <tr><td>91–100%</td><td>Especialista em Treinamento Vocal</td></tr>
+    </table>
+  </section>
+
+</main>
+
+<footer class="cta-final">
+  <h2>Pronto para começar?</h2>
+  <p>O diagnóstico é o primeiro passo da sua formação. Reserve um momento sem interrupções e responda com sinceridade.</p>
+  <a class="cta" href="dossie-diagnostico-treinamento-vocal.html">Iniciar o diagnóstico</a>
+</footer>
+
+<script>
+for(let i=0;i<28;i++){
+  const h = 6 + Math.round(Math.abs(Math.sin(i*0.7))*20);
+  const s = document.createElement('span');
+  s.style.height = h+'px';
+  document.getElementById('wave').appendChild(s);
+}
+</script>
+</body>
+</html>
