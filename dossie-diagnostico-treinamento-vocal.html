@@ -307,12 +307,14 @@ function buildForm(){
     fieldsRow([textField("cidade","Cidade"),textField("estado","Estado")]),
     fieldsRow([textField("telefone","Telefone"),textField("email","E-mail","email")])
   ]));
+  labels.idade="Idade"; labels.cidade="Cidade"; labels.estado="Estado"; labels.telefone="Telefone";
 
   const formOpts = ["Música","Bacharelado","Licenciatura","Fonoaudiologia","Educação Musical","Cursos Livres","Musicoterapia","Outros"];
-  f.appendChild(sectionEl("Formação", "", [
-    radioField("formacao_principal","Qual sua formação principal?",formOpts),
+  f.appendChild(sectionEl("Formação", "Marque uma ou mais opções.", [
+    checkField("formacao_principal","Qual sua formação?",formOpts),
     textField("formacao_outros","Se 'Outros', qual?")
   ]));
+  labels.formacao_principal="Formação"; labels.formacao_outros="Formação — Outros, qual?";
 
   f.appendChild(sectionEl("Experiência", "", [
     fieldsRow([textField("anos_canta","Há quantos anos canta?"),textField("anos_ensina","Há quantos anos ensina canto?")]),
@@ -320,14 +322,20 @@ function buildForm(){
       radioField("formacao_vocologia","Já participou de formações em vocologia?",["Sim","Não"])]),
     textField("formacao_vocologia_quais","Se sim, quais?")
   ]));
+  labels.anos_canta="Há quantos anos canta?"; labels.anos_ensina="Há quantos anos ensina canto?";
+  labels.num_alunos="Quantos alunos atende atualmente?"; labels.formacao_vocologia="Já participou de formações em vocologia?";
+  labels.formacao_vocologia_quais="Formações em vocologia — quais?";
 
   const estilos = ["Gospel","Worship","MPB","Pop","Rock","Sertanejo","Teatro Musical","Erudito","Coral","Outros"];
   f.appendChild(sectionEl("Perfil de Atuação", "Marque os estilos que trabalha.", [
     checkField("estilos","",estilos),
     textField("estilos_outros","Em caso de 'Outros', liste")
   ]));
+  labels.estilos="Estilos que trabalha"; labels.estilos_outros="Estilos — Outros, quais?";
 
-  const scaleSec = sectionEl("Autoavaliação de Competências","Escala de 0 (nenhum conhecimento) a 10 (domínio completo).",[]);
+  const scaleSec = sectionEl("Autoavaliação de Competências","Para cada item abaixo, clique no número que melhor representa seu nível atual de compreensão sobre aquele assunto. Escolha apenas um número por linha: 0 significa que você ainda não tem nenhum conhecimento sobre o tema, e 10 significa domínio completo — os números entre eles representam níveis intermediários.",[]);
+  scaleSec.appendChild(el('div',{style:'display:flex;justify-content:space-between;max-width:320px;font-size:11.5px;color:var(--ink-soft);margin:-6px 0 16px;'},
+    el('span',{},'0 · Nenhum conhecimento'), el('span',{},'10 · Domínio completo')));
   SCALE_AREAS.forEach(group=>{
     scaleSec.appendChild(el('p',{style:'font-weight:700;font-size:14px;margin:14px 0 8px;'},group.group));
     group.items.forEach(([key,label])=>{
@@ -392,10 +400,12 @@ function buildForm(){
   f.appendChild(adjSec);
 
   const saudeSec = sectionEl("Saúde e Diagnóstico Vocal","",[]);
-  saudeSec.appendChild(el('p',{style:'font-weight:700;font-size:13.5px;margin:6px 0;'},"5 fatores de risco para a voz"));
-  for(let i=1;i<=5;i++){ const k="risco_"+i; labels[k]="Fator de risco "+i; saudeSec.appendChild(textField(k,"Fator "+i)); }
-  saudeSec.appendChild(el('p',{style:'font-weight:700;font-size:13.5px;margin:14px 0 6px;'},"5 sinais de alerta para encaminhamento clínico"));
-  for(let i=1;i<=5;i++){ const k="alerta_"+i; labels[k]="Sinal de alerta "+i; saudeSec.appendChild(textField(k,"Sinal "+i)); }
+  saudeSec.appendChild(el('p',{style:'font-weight:700;font-size:13.5px;margin:6px 0 2px;'},"Cite 5 fatores de risco para a saúde vocal"));
+  saudeSec.appendChild(el('p',{style:'font-size:12px;color:var(--ink-soft);margin:0 0 10px;'},"Pense em hábitos, ambiente ou uso vocal inadequado que podem prejudicar a voz de um cantor — um fator por linha (ex.: tabagismo, refluxo não tratado, falar muito sem hidratação)."));
+  for(let i=1;i<=5;i++){ const k="risco_"+i; labels[k]="Fator de risco "+i; saudeSec.appendChild(textField(k,"Fator de risco "+i)); }
+  saudeSec.appendChild(el('p',{style:'font-weight:700;font-size:13.5px;margin:14px 0 2px;'},"Cite 5 sinais de alerta para encaminhamento clínico"));
+  saudeSec.appendChild(el('p',{style:'font-size:12px;color:var(--ink-soft);margin:0 0 10px;'},"Sinais que indicam que o aluno deve ser encaminhado a um profissional de saúde (otorrino ou fonoaudiólogo) antes de continuar o treinamento vocal — um sinal por linha (ex.: rouquidão persistente por mais de 30 dias, dor ao falar ou cantar)."));
+  for(let i=1;i<=5;i++){ const k="alerta_"+i; labels[k]="Sinal de alerta "+i; saudeSec.appendChild(textField(k,"Sinal de alerta "+i)); }
   saudeSec.appendChild(textareaField("encam_otorrino","Quando encaminhar para otorrinolaringologista?"));
   saudeSec.appendChild(textareaField("encam_fono","Quando encaminhar para fonoaudiólogo?"));
   labels.encam_otorrino="Quando encaminhar para otorrinolaringologista?";
@@ -421,8 +431,10 @@ function buildForm(){
   });
   f.appendChild(casesSec);
 
-  const beliefsSec = sectionEl("Crenças e Paradigmas","1 = Discordo totalmente · 5 = Concordo totalmente.",[]);
+  const beliefsSec = sectionEl("Crenças e Paradigmas","Leia cada afirmação abaixo e clique no número que representa o quanto você concorda com ela, com base no que você realmente pensa e pratica hoje — não existe resposta certa ou errada.",[]);
   beliefsSec.classList.add('beliefs');
+  beliefsSec.appendChild(el('div',{style:'display:flex;justify-content:space-between;max-width:340px;font-size:11.5px;color:var(--ink-soft);margin:-6px 0 16px;'},
+    el('span',{},'1 · Discordo totalmente'), el('span',{},'5 · Concordo totalmente')));
   BELIEFS.forEach((stmt,i)=>{
     const key = "crenca_"+i;
     labels[key]=stmt+" (1–5)";
