@@ -46,6 +46,10 @@ footer.cta-final{background:var(--paper-2);padding:48px 22px;text-align:center;b
 footer.cta-final h2{margin-bottom:8px;}
 footer.cta-final p{margin:0 auto 20px;}
 .loginbox{max-width:360px;margin:0 auto;text-align:left;}
+.roletabs{display:flex;gap:6px;margin-bottom:12px;}
+.roletabs .roletab{flex:1;font:inherit;font-size:12.5px;font-weight:700;padding:8px 10px;border-radius:20px;
+  border:1px solid var(--line);background:#fff;color:var(--ink-soft);cursor:pointer;}
+.roletabs .roletab.active{background:var(--ink);color:#fff;border-color:var(--ink);}
 .hero .loginbox{margin:0;}
 .loginbox input{width:100%;font:inherit;font-size:14px;padding:11px 12px;border-radius:7px;border:1px solid rgba(250,247,242,.3);background:rgba(255,255,255,.06);color:#fff;margin-bottom:9px;}
 .hero .loginbox input::placeholder{color:#9FAAB0;}
@@ -153,47 +157,68 @@ function el(tag, attrs={}, ...children){
 function renderLogin(containerId){
   const box = document.getElementById(containerId);
   box.innerHTML='';
-  const savedNome = localStorage.getItem('dossie_nome') || '';
-  const savedEmail = localStorage.getItem('dossie_email') || '';
-  const nomeInp = el('input',{type:'text',placeholder:'Seu nome completo',value:savedNome});
-  const emailInp = el('input',{type:'email',placeholder:'Seu e-mail',value:savedEmail});
-  const btn = el('button',{class:'cta',style:'width:100%;border:none;cursor:pointer;'},'Entrar');
-  const err = el('p',{class:'err hidden'});
-  box.appendChild(el('div',{class:'loginbox'}, nomeInp, emailInp, btn, err));
 
-  btn.addEventListener('click', async ()=>{
-    const nome = nomeInp.value.trim();
-    const email = emailInp.value.trim();
-    if(!nome || !email || !email.includes('@')){
-      err.classList.remove('hidden'); err.textContent='Preencha nome e e-mail válidos.'; return;
-    }
-    localStorage.setItem('dossie_nome', nome);
-    localStorage.setItem('dossie_email', email);
-    btn.disabled = true; btn.textContent='Verificando...';
-    try{
-      const res = await fetch(APPS_SCRIPT_URL, {method:'GET'});
-      const json = await res.json();
-      const key = email.toLowerCase();
-      const sub1 = json.submissions1 && json.submissions1[key];
-      const sub2 = json.submissions2 && json.submissions2[key];
-      const released = json.releases && json.releases.includes(key);
-      const qs = '?email='+encodeURIComponent(email)+'&nome='+encodeURIComponent(nome);
+  const tabAluno = el('button',{type:'button',class:'roletab active'},'Sou aluno');
+  const tabProf = el('button',{type:'button',class:'roletab'},'Sou professor');
+  const tabs = el('div',{class:'roletabs'}, tabAluno, tabProf);
+  const formArea = el('div',{});
+  box.appendChild(el('div',{class:'loginbox'}, tabs, formArea));
 
-      if(!sub1){
-        renderStatus(containerId, 'Tudo pronto, '+nome+'.', 'Você ainda não enviou a Parte 1.', 'Iniciar Parte 1', 'dossie-parte1.html'+qs);
-      } else if(sub2){
-        renderStatus(containerId, 'Dossiê concluído!', 'Você já enviou as duas partes. Obrigado, '+nome+'!', null, null);
-      } else if(released){
-        renderStatus(containerId, 'Parte 2 liberada!', 'Sua Parte 1 foi corrigida e a Parte 2 já está disponível.', 'Iniciar Parte 2', 'dossie-parte2.html'+qs);
-      } else {
-        renderStatus(containerId, 'Parte 1 recebida.', 'Você enviou em '+new Date(sub1.submittedAt).toLocaleString('pt-BR')+'. Aguarde o professor liberar a Parte 2 — volte a este link depois.', null, null);
+  function renderAlunoForm(){
+    formArea.innerHTML='';
+    const savedNome = localStorage.getItem('dossie_nome') || '';
+    const savedEmail = localStorage.getItem('dossie_email') || '';
+    const nomeInp = el('input',{type:'text',placeholder:'Seu nome completo',value:savedNome});
+    const emailInp = el('input',{type:'email',placeholder:'Seu e-mail',value:savedEmail});
+    const btn = el('button',{class:'cta',style:'width:100%;border:none;cursor:pointer;'},'Entrar');
+    const err = el('p',{class:'err hidden'});
+    formArea.appendChild(nomeInp); formArea.appendChild(emailInp); formArea.appendChild(btn); formArea.appendChild(err);
+
+    btn.addEventListener('click', async ()=>{
+      const nome = nomeInp.value.trim();
+      const email = emailInp.value.trim();
+      if(!nome || !email || !email.includes('@')){
+        err.classList.remove('hidden'); err.textContent='Preencha nome e e-mail válidos.'; return;
       }
-    }catch(e){
-      err.classList.remove('hidden'); err.textContent='Erro ao verificar. Tente novamente.';
-      btn.disabled=false; btn.textContent='Entrar';
-      console.error(e);
-    }
-  });
+      localStorage.setItem('dossie_nome', nome);
+      localStorage.setItem('dossie_email', email);
+      btn.disabled = true; btn.textContent='Verificando...';
+      try{
+        const res = await fetch(APPS_SCRIPT_URL, {method:'GET'});
+        const json = await res.json();
+        const key = email.toLowerCase();
+        const sub1 = json.submissions1 && json.submissions1[key];
+        const sub2 = json.submissions2 && json.submissions2[key];
+        const released = json.releases && json.releases.includes(key);
+        const qs = '?email='+encodeURIComponent(email)+'&nome='+encodeURIComponent(nome);
+
+        if(!sub1){
+          renderStatus(containerId, 'Tudo pronto, '+nome+'.', 'Você ainda não enviou a Parte 1.', 'Iniciar Parte 1', 'dossie-parte1.html'+qs);
+        } else if(sub2){
+          renderStatus(containerId, 'Dossiê concluído!', 'Você já enviou as duas partes. Obrigado, '+nome+'!', null, null);
+        } else if(released){
+          renderStatus(containerId, 'Parte 2 liberada!', 'Sua Parte 1 foi corrigida e a Parte 2 já está disponível.', 'Iniciar Parte 2', 'dossie-parte2.html'+qs);
+        } else {
+          renderStatus(containerId, 'Parte 1 recebida.', 'Você enviou em '+new Date(sub1.submittedAt).toLocaleString('pt-BR')+'. Aguarde o professor liberar a Parte 2 — volte a este link depois.', null, null);
+        }
+      }catch(e){
+        err.classList.remove('hidden'); err.textContent='Erro ao verificar. Tente novamente.';
+        btn.disabled=false; btn.textContent='Entrar';
+        console.error(e);
+      }
+    });
+  }
+
+  function renderProfForm(){
+    formArea.innerHTML='';
+    formArea.appendChild(el('p',{style:'font-size:12.5px;color:inherit;opacity:.8;margin:0 0 10px;'},'Acesse o painel para acompanhar respostas, liberar a Parte 2 e corrigir.'));
+    formArea.appendChild(el('a',{class:'cta',href:'dossie-professor.html',style:'display:block;text-align:center;'},'Acessar Painel do Professor'));
+  }
+
+  tabAluno.addEventListener('click', ()=>{ tabAluno.classList.add('active'); tabProf.classList.remove('active'); renderAlunoForm(); });
+  tabProf.addEventListener('click', ()=>{ tabProf.classList.add('active'); tabAluno.classList.remove('active'); renderProfForm(); });
+
+  renderAlunoForm();
 }
 
 function renderStatus(containerId, title, text, btnLabel, btnHref){
