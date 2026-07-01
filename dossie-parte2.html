@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dossiê — Parte 2 · Raciocínio Clínico e Crenças</title>
+<style>
+:root{
+  --ink:#16202A; --ink-soft:#3C4A57; --paper:#FAF7F2; --paper-2:#F0EBE0;
+  --gold:#C98A3E; --gold-dark:#8C5C20; --teal:#2F6F6B; --teal-dark:#1E4E4B; --line:#DCD4C2;
+  --red:#B3432F; --green:#3C7A4A;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.5;}
+.wrap{max-width:880px;margin:0 auto;padding:0 20px 80px;}
+header.top{background:var(--ink);color:var(--paper);padding:36px 20px 28px;position:relative;overflow:hidden;}
+header.top::after{content:"";position:absolute;left:0;right:0;bottom:0;height:5px;background:linear-gradient(90deg,var(--gold),var(--teal));}
+.top-inner{max-width:880px;margin:0 auto;}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:600;}
+h1.title{font-family:Georgia,"Times New Roman",serif;font-size:clamp(24px,4vw,34px);margin:8px 0 6px;font-weight:700;}
+.subtitle{color:#C9D1D6;font-size:14px;max-width:560px;}
+.waveform{display:flex;align-items:flex-end;gap:3px;height:22px;margin-top:18px;}
+.waveform span{display:block;width:3px;background:var(--gold);opacity:.85;border-radius:2px;}
+section.card{background:#fff;border:1px solid var(--line);border-radius:10px;margin-top:22px;padding:24px 24px 26px;}
+section.card h2{font-family:Georgia,"Times New Roman",serif;font-size:19px;margin:0 0 4px;color:var(--ink);border-bottom:2px solid var(--paper-2);padding-bottom:10px;}
+section.card .sec-hint{font-size:12.5px;color:var(--ink-soft);margin:0 0 16px;}
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:13.5px;font-weight:600;margin-bottom:5px;color:var(--ink);}
+textarea{width:100%;font:inherit;font-size:14px;padding:9px 11px;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink);min-height:64px;resize:vertical;}
+input[type=text],input[type=email]{width:100%;font:inherit;font-size:14px;padding:9px 11px;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink);}
+input:focus,textarea:focus{outline:2px solid var(--teal);outline-offset:1px;}
+.scale-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+.scale-row .slabel{font-size:13.5px;font-weight:400;}
+.scale-opts{display:flex;gap:4px;}
+.scale-opts label{width:26px;height:26px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:5px;font-size:11px;cursor:pointer;background:var(--paper);}
+.scale-opts input{display:none;}
+.scale-opts input:checked + span{background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;width:100%;height:100%;border-radius:4px;}
+.case-block{border-left:3px solid var(--gold);padding:4px 0 4px 16px;margin-bottom:18px;}
+.case-block h3{font-size:15px;margin:0 0 6px;font-family:Georgia,serif;}
+.case-block .case-desc{font-size:13px;color:var(--ink-soft);margin-bottom:10px;white-space:pre-line;}
+.submitbar{position:sticky;bottom:0;background:var(--paper);border-top:1px solid var(--line);padding:14px 0;margin-top:10px;display:flex;justify-content:flex-end;gap:10px;}
+button.primary{font:inherit;font-weight:700;font-size:14.5px;padding:12px 22px;border-radius:7px;border:none;background:var(--gold);color:#241500;cursor:pointer;}
+button.primary:hover{background:var(--gold-dark);color:#fff;}
+button.primary:disabled{opacity:.5;cursor:default;}
+.statusmsg{font-size:13px;margin-top:10px;padding:10px 12px;border-radius:6px;}
+.statusmsg.ok{background:#E6F1E9;color:var(--green);}
+.statusmsg.err{background:#FBE7E3;color:var(--red);}
+.hidden{display:none !important;}
+.gatebox{max-width:420px;margin:60px auto;text-align:center;}
+.gatebox .field{text-align:left;}
+.lockmsg{max-width:520px;margin:70px auto;text-align:center;background:#fff;border:1px solid var(--line);border-radius:10px;padding:32px 26px;}
+.lockmsg h2{font-family:Georgia,serif;margin:0 0 10px;}
+.lockmsg a{color:var(--teal-dark);font-weight:700;}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <div class="eyebrow">Formação Profissional em Treinamento Vocal — Parte 2 de 2</div>
+    <h1 class="title">Dossiê Diagnóstico — Raciocínio Clínico e Crenças</h1>
+    <p class="subtitle">Estudos de caso e autoavaliação de crenças. Disponível apenas após o professor liberar esta etapa.</p>
+    <div class="waveform" id="wave"></div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div id="view-gate"></div>
+  <div id="view-form" class="hidden"></div>
+</div>
+
+<script>
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxTuXuWk1BiQdUWdYsZNdmjQ5Nt00d653cK15DSVUhjSsM5qkF8yJ6F0iZ_6qfGUJSMNw/exec";
+
+for(let i=0;i<28;i++){
+  const h = 6 + Math.round(Math.abs(Math.sin(i*0.7))*16);
+  const s = document.createElement('span'); s.style.height = h+'px';
+  document.getElementById('wave').appendChild(s);
+}
+
+function el(tag, attrs={}, ...children){
+  const e = document.createElement(tag);
+  for(const k in attrs){
+    if(k==='html') e.innerHTML = attrs[k];
+    else if(k.startsWith('on')) e.addEventListener(k.slice(2), attrs[k]);
+    else e.setAttribute(k, attrs[k]);
+  }
+  children.flat().forEach(c=>{ if(c) e.appendChild(typeof c==='string'?document.createTextNode(c):c); });
+  return e;
+}
+function sectionEl(title,hint,children){
+  const s = el('section',{class:'card'});
+  s.appendChild(el('h2',{},title));
+  if(hint) s.appendChild(el('p',{class:'sec-hint'},hint));
+  children.forEach(c=>s.appendChild(c));
+  return s;
+}
+function textareaField(key,label){
+  const wrap = el('div',{class:'field'});
+  wrap.appendChild(el('label',{for:key},label));
+  wrap.appendChild(el('textarea',{id:key,name:key}));
+  return wrap;
+}
+function scaleRow(key,label,max){
+  const row = el('div',{class:'scale-row'});
+  row.appendChild(el('span',{class:'slabel'},label));
+  const opts = el('div',{class:'scale-opts'});
+  for(let i=0;i<=max;i++){ opts.appendChild(el('label',{}, el('input',{type:'radio',name:key,value:i}), el('span',{},String(i)))); }
+  row.appendChild(opts);
+  return row;
+}
+
+const CASES = [
+  {n:1, perfil:"Cantor — 15 anos — MPB / POP", desc:"Apresenta: soprosidade excessiva na voz; pouca projeção; dificuldade em sustentar notas por mais de 5 segundos; dificuldade para executar notas mais graves.",
+   q:["O que está acontecendo?","Por que está acontecendo?","Como interviria?","Quais exercícios aplicaria?"]},
+  {n:2, perfil:"Cantor — 35 anos — Gospel / Worship", desc:"Características: voz com acentuação veementemente anasalada; dificuldade para modificar o timbre; dificuldade em articular notas mais graves.",
+   q:["Qual estrutura pode estar envolvida?","Como diferenciar nasalidade funcional de patológica?","Quais exercícios aplicaria?","Como explicaria o problema para o aluno?"]},
+  {n:3, perfil:"Cantora — 22 anos — POP", desc:"Apresenta voz suave, pouca projeção, grande consumo de ar. Observação: som arejado, frases curtas, dificuldade de sustentação.",
+   q:["Qual hipótese funcional?","O fechamento glótico parece eficiente?","Como isso afeta a acústica da voz?","Quais exercícios utilizaria?","Como avaliaria a evolução?"]},
+  {n:4, perfil:"Cantor — 28 anos — Gospel — Barítono", desc:"Relata que alcança os agudos, mas sente muita pressão na garganta; após ensaios longos surge fadiga. Observação auditiva: som brilhante, volume elevado, sensação de esforço.",
+   q:["O que pode estar acontecendo?","Quais estruturas podem estar sendo sobrecarregadas?","Que hipótese funcional você levantaria?","Qual seria sua primeira estratégia de intervenção?","Que exercícios utilizaria?"]},
+  {n:5, perfil:"Cantor — 31 anos — Rock", desc:"Muito volume, pouca resistência, rouquidão frequente durante o canto, dificuldade em estabilizar as notas (desafina), voz aparenta estar sempre cansada.",
+   q:["O volume está sendo produzido de forma eficiente?","Qual o risco fisiológico?","Como diferenciar intensidade de compressão?","Que ajustes poderiam ser explorados?"]},
+  {n:6, perfil:"Cantora — 42 anos — Pop", desc:"Nos agudos a laringe sobe excessivamente; o som se torna estridente; há sensação de voz espremida.",
+   q:["O aumento da altura laríngea é necessariamente um problema?","Quando se torna prejudicial?","Como avaliaria funcionalmente?","Quais intervenções tentaria?"]},
+  {n:7, perfil:"Cantor — 24 anos — Sertanejo / Rock — 8 meses em treinamento", desc:"Pouca evolução; executa exercícios corretamente nas aulas; afirma que entende as explicações; relata que não tem tempo de treinar em casa, apenas na escola.",
+   q:["O problema está necessariamente na técnica?","Que fatores investigaria?","Como reavaliaria o planejamento?","Como definiria novas metas?"]},
+  {n:8, perfil:"Cantora profissional — 38 anos — MPB / Sertanejo", desc:"Relata rouquidão há mais de 30 dias, falhas vocais, fadiga crescente, perda de estabilidade nas notas.",
+   q:["Qual deve ser sua postura profissional?","O que não deve ser feito?","Quando encaminhar?","Para qual profissional encaminhar?","Como conduzir a conversa com a aluna?"]},
+  {n:9, perfil:"Cantor — 38 anos — Pop-Rock / Música Eletrônica", desc:"Alcança apenas uma oitava e meia. Deseja aumentar extensão vocal.",
+   q:["Extensão limitada é sempre um problema? Justifique.","Quais fatores investigaria?","Como definiria objetivos realistas?","Como construiria um plano de evolução?"]},
+  {n:10, perfil:"Cantora — 22 anos — Gospel", desc:"Raiz da língua rígida, som preso, tensão que evolui para desgaste vocal.",
+   q:["Como a língua influencia a fonação?","Como essa tensão afeta a acústica?","Quais exercícios utilizaria?","Como avaliaria melhora?"]},
+  {n:14, perfil:"Novo aluno", desc:"Sem diagnóstico médico; canta há 10 anos; dificuldades nos agudos; relata fadiga; histórico de refluxo.",
+   q:["Quais informações adicionais você coletaria?","O que investigaria primeiro?","Como estruturaria a avaliação inicial?","Quais hipóteses levantaria?","Quais seriam seus critérios para encaminhamento clínico?"]}
+];
+
+const BELIEFS = [
+  "Para cantar bem, é necessário abrir a boca o máximo possível.",
+  "Todo cantor precisa aprender a cantar com laringe baixa.",
+  "Sentir desconforto durante exercícios vocais faz parte do processo de evolução.",
+  "Quanto mais volume o cantor produz, melhor é sua técnica vocal.",
+  "Um exercício vocal que funciona para um aluno deve funcionar para todos os outros.",
+  "Uma boa técnica vocal é igual para todos os estilos musicais.",
+  "Vibrato é algo que deve ser produzido conscientemente pelo cantor.",
+  "O aquecimento vocal elimina completamente o risco de lesões.",
+  "Um cantor experiente não precisa mais estudar técnica vocal.",
+  "Se o cantor alcança a nota, significa que a emissão está correta.",
+  "Todo problema vocal pode ser resolvido apenas com exercícios.",
+  "O professor de canto pode identificar lesões vocais apenas ouvindo a voz.",
+  "O objetivo principal da técnica vocal é aumentar a extensão vocal.",
+  "A sensação que o aluno relata é suficiente para determinar o que está acontecendo fisiologicamente.",
+  "Quanto mais complexo o exercício, maior sua eficácia.",
+  "Apoio é prender o ar.",
+  "Agudos dependem de força.",
+  "Belt é gritar afinado.",
+  "Voz de cabeça é ressonância na cabeça.",
+  "Rouquidão após cantar é normal.",
+  "Quanto mais ar, melhor o som.",
+  "Falsete é errado.",
+  "O diafragma sustenta notas."
+];
+
+function buildForm(nome){
+  const f = document.createElement('form');
+  f.id = 'mainform';
+
+  const casesSec = sectionEl("Raciocínio Clínico e Pedagógico — Estudos de Caso","",[]);
+  CASES.forEach(c=>{
+    const block = el('div',{class:'case-block'});
+    block.appendChild(el('h3',{},"Caso "+c.n+" — "+c.perfil));
+    block.appendChild(el('p',{class:'case-desc'},c.desc));
+    c.q.forEach((qtext,i)=>{ block.appendChild(textareaField("caso"+c.n+"_"+i,qtext)); });
+    casesSec.appendChild(block);
+  });
+  f.appendChild(casesSec);
+
+  const beliefsSec = sectionEl("Crenças e Paradigmas","Leia cada afirmação e clique no número que representa o quanto você concorda com ela, com base no que pratica hoje — não existe resposta certa ou errada.",[]);
+  beliefsSec.appendChild(el('div',{style:'display:flex;justify-content:space-between;max-width:340px;font-size:11.5px;color:var(--ink-soft);margin:-6px 0 16px;'},
+    el('span',{},'1 · Discordo totalmente'), el('span',{},'5 · Concordo totalmente')));
+  BELIEFS.forEach((stmt,i)=>{ beliefsSec.appendChild(scaleRow("crenca_"+i,stmt,5)); });
+  f.appendChild(beliefsSec);
+
+  const submitbar = el('div',{class:'submitbar'},
+    el('span',{id:'savemsg'}),
+    el('button',{type:'button',class:'primary',id:'btnsubmit',onclick:submitForm},"Enviar Parte 2")
+  );
+  f.appendChild(submitbar);
+
+  document.getElementById('view-form').appendChild(f);
+}
+
+function collectAnswers(form){
+  const data = {};
+  Array.from(form.elements).forEach(elm=>{
+    if(!elm.name) return;
+    if(elm.type==='radio'){ if(elm.checked) data[elm.name]=elm.value; else if(!(elm.name in data)) data[elm.name]=data[elm.name]||""; }
+    else if(elm.type!=='button'){ data[elm.name]=elm.value; }
+  });
+  return data;
+}
+
+let CURRENT_EMAIL = '';
+let CURRENT_NOME = '';
+
+async function submitForm(){
+  const form = document.getElementById('mainform');
+  const msg = document.getElementById('savemsg');
+  const answers = collectAnswers(form);
+  const record = {type:'submission2', studentName:CURRENT_NOME, email:CURRENT_EMAIL, submittedAt:new Date().toISOString(), answers};
+  document.getElementById('btnsubmit').disabled = true;
+  try{
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(record)
+    });
+    let ok = true;
+    try{ const j = await res.json(); ok = j.ok !== false; }catch(e){}
+    if(!ok){
+      msg.className='statusmsg err'; msg.textContent='Este e-mail já enviou a Parte 2 anteriormente.';
+      document.getElementById('btnsubmit').textContent = 'Já enviado';
+      return;
+    }
+    msg.className='statusmsg ok';
+    msg.textContent='Parte 2 enviada com sucesso, '+CURRENT_NOME+'! Obrigado por concluir o dossiê.';
+    document.getElementById('btnsubmit').textContent = 'Enviado';
+    window.scrollTo({top:0,behavior:'smooth'});
+  }catch(err){
+    msg.className='statusmsg err'; msg.textContent='Não foi possível enviar agora. Tente novamente.';
+    document.getElementById('btnsubmit').disabled = false;
+    console.error(err);
+  }
+}
+
+function showLock(title, text, linkHtml){
+  document.getElementById('view-gate').innerHTML='';
+  const box = el('div',{class:'lockmsg'}, el('h2',{},title), el('p',{},text));
+  if(linkHtml) box.appendChild(el('p',{html:linkHtml}));
+  document.getElementById('view-gate').appendChild(box);
+}
+
+function startGate(){
+  const gate = document.getElementById('view-gate');
+  gate.innerHTML='';
+  const emailInp = el('input',{type:'email',placeholder:'Seu e-mail (o mesmo usado na Parte 1)'});
+  const btn = el('button',{class:'primary',style:'width:100%;margin-top:8px;'},'Continuar');
+  const errMsg = el('p',{class:'statusmsg err hidden'});
+  gate.appendChild(el('div',{class:'gatebox'},
+    el('p',{style:'font-size:14px;color:var(--ink-soft);'},'Digite o e-mail que você usou para enviar a Parte 1.'),
+    el('div',{class:'field'},el('label',{},'E-mail'),emailInp),
+    btn, errMsg
+  ));
+  btn.addEventListener('click', async ()=>{
+    const email = emailInp.value.trim();
+    if(!email || !email.includes('@')){
+      errMsg.classList.remove('hidden'); errMsg.textContent='Digite um e-mail válido.'; return;
+    }
+    btn.disabled = true; btn.textContent='Verificando...';
+    try{
+      const res = await fetch(APPS_SCRIPT_URL, {method:'GET'});
+      const json = await res.json();
+      const key = email.toLowerCase();
+      const sub1 = json.submissions1 && json.submissions1[key];
+      if(!sub1){
+        showLock('Parte 1 não encontrada', 'Não encontramos um envio da Parte 1 com este e-mail. Você precisa concluir a Parte 1 primeiro.', '<a href="dossie-parte1.html">Ir para a Parte 1</a>');
+        return;
+      }
+      const sub2 = json.submissions2 && json.submissions2[key];
+      if(sub2){
+        showLock('Parte 2 já enviada', 'Você já enviou a Parte 2 em '+new Date(sub2.submittedAt).toLocaleString('pt-BR')+'. Obrigado por concluir o dossiê!');
+        return;
+      }
+      const released = json.releases && json.releases.includes(key);
+      if(!released){
+        showLock('Aguardando liberação', 'Sua Parte 1 foi recebida. A Parte 2 será liberada pelo professor após a correção — você poderá acessar este mesmo link novamente quando estiver liberada.');
+        return;
+      }
+      CURRENT_EMAIL = email;
+      CURRENT_NOME = sub1.studentName;
+      gate.classList.add('hidden');
+      document.getElementById('view-form').classList.remove('hidden');
+      buildForm(sub1.studentName);
+    }catch(e){
+      errMsg.classList.remove('hidden'); errMsg.textContent='Erro ao verificar. Tente novamente.';
+      btn.disabled=false; btn.textContent='Continuar';
+      console.error(e);
+    }
+  });
+}
+
+startGate();
+</script>
+</body>
+</html>

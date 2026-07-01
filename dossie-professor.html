@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel do Professor — Dossiê Diagnóstico Vocal</title>
+<style>
+:root{
+  --ink:#16202A; --ink-soft:#3C4A57; --paper:#FAF7F2; --paper-2:#F0EBE0;
+  --gold:#C98A3E; --gold-dark:#8C5C20; --teal:#2F6F6B; --teal-dark:#1E4E4B; --line:#DCD4C2;
+  --red:#B3432F; --green:#3C7A4A;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.5;}
+.wrap{max-width:880px;margin:0 auto;padding:0 20px 80px;}
+header.top{background:var(--ink);color:var(--paper);padding:36px 20px 28px;position:relative;overflow:hidden;}
+header.top::after{content:"";position:absolute;left:0;right:0;bottom:0;height:5px;background:linear-gradient(90deg,var(--gold),var(--teal));}
+.top-inner{max-width:880px;margin:0 auto;}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:600;}
+h1.title{font-family:Georgia,"Times New Roman",serif;font-size:clamp(22px,4vw,30px);margin:8px 0 0;font-weight:700;}
+section.card{background:#fff;border:1px solid var(--line);border-radius:10px;margin-top:22px;padding:24px 24px 26px;}
+section.card h2{font-family:Georgia,"Times New Roman",serif;font-size:19px;margin:0 0 4px;color:var(--ink);border-bottom:2px solid var(--paper-2);padding-bottom:10px;}
+.sec-hint{font-size:12.5px;color:var(--ink-soft);margin:0 0 16px;}
+input[type=text],input[type=number]{width:100%;font:inherit;font-size:14px;padding:9px 11px;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink);}
+button.primary{font:inherit;font-weight:700;font-size:14.5px;padding:11px 20px;border-radius:7px;border:none;background:var(--gold);color:#241500;cursor:pointer;}
+button.primary:hover{background:var(--gold-dark);color:#fff;}
+button.secondary{font:inherit;font-weight:600;font-size:13px;padding:9px 16px;border-radius:7px;border:1px solid var(--line);background:#fff;cursor:pointer;}
+button.tealbtn{font:inherit;font-weight:700;font-size:12.5px;padding:8px 14px;border-radius:20px;border:none;background:var(--teal);color:#fff;cursor:pointer;}
+.hidden{display:none !important;}
+.gatebox{max-width:340px;margin:60px auto;text-align:center;}
+.gatebox input{margin-bottom:10px;}
+.teach-list{display:flex;flex-direction:column;gap:10px;}
+.subcard{border:1px solid var(--line);border-radius:8px;padding:14px 16px;background:var(--paper);cursor:pointer;}
+.subcard:hover{border-color:var(--teal);}
+.subcard .srow{display:flex;justify-content:space-between;align-items:center;}
+.subcard .sname{font-weight:700;font-size:14.5px;}
+.subcard .sdate{font-size:12px;color:var(--ink-soft);}
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;margin:6px 6px 0 0;}
+.tag.pend{background:#FBEFE0;color:var(--gold-dark);}
+.tag.done{background:#E6F1E9;color:var(--green);}
+.tag.wait{background:#EDEDED;color:var(--ink-soft);}
+.detail-back{background:none;border:none;color:var(--teal);font-weight:700;font-size:13px;cursor:pointer;padding:0 0 14px;}
+.qa{border-bottom:1px solid var(--paper-2);padding:10px 0;}
+.qa .q{font-size:12.5px;font-weight:700;color:var(--ink-soft);}
+.qa .a{font-size:14px;margin-top:3px;white-space:pre-wrap;}
+.qa .a.empty{color:#B5AE9C;font-style:italic;}
+.score-grid{display:grid;grid-template-columns:1fr 90px;gap:10px 14px;align-items:center;margin-bottom:6px;}
+.score-grid .areaname{font-size:13.5px;font-weight:600;}
+.totalbox{margin-top:14px;padding:14px 16px;border-radius:8px;background:var(--ink);color:#fff;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
+.totalbox .tnum{font-size:26px;font-weight:700;font-family:Georgia,serif;}
+.totalbox .tclass{font-size:13.5px;color:var(--gold);font-weight:700;}
+.releasebar{display:flex;justify-content:space-between;align-items:center;background:var(--paper-2);border-radius:8px;padding:12px 16px;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <div class="eyebrow">Formação Profissional em Treinamento Vocal</div>
+    <h1 class="title">Painel do Professor</h1>
+  </div>
+</header>
+
+<div class="wrap">
+  <div id="view-gate"></div>
+  <div id="view-prof" class="hidden"></div>
+</div>
+
+<script>
+const TEACHER_CODE = "vocologia2026";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxTuXuWk1BiQdUWdYsZNdmjQ5Nt00d653cK15DSVUhjSsM5qkF8yJ6F0iZ_6qfGUJSMNw/exec";
+const CACHE = {submissions1:{}, submissions2:{}, releases:[], corrections:{}};
+
+function el(tag, attrs={}, ...children){
+  const e = document.createElement(tag);
+  for(const k in attrs){
+    if(k==='html') e.innerHTML = attrs[k];
+    else if(k.startsWith('on')) e.addEventListener(k.slice(2), attrs[k]);
+    else e.setAttribute(k, attrs[k]);
+  }
+  children.flat().forEach(c=>{ if(c) e.appendChild(typeof c==='string'?document.createTextNode(c):c); });
+  return e;
+}
+
+const AREA_BY_SECTION = {fund:'pedagogia',resp:'fisiologia',diaf:'fisiologia',lar:'anatomia',
+  pregas:'anatomia',reg:'fisiologia',acres:'acustica',pedag:'pedagogia',obj:'pedagogia'};
+
+const TEXT_SECTIONS = [
+  {id:"fund", q:["O que é voz?","O que diferencia voz falada de voz cantada?","O que é vocologia?",
+    "Qual o papel do treinador vocal?","Cite os quatro sistemas envolvidos na produção vocal."]},
+  {id:"resp", q:["Qual a função dos pulmões na produção vocal?","O que é fluxo aéreo?",
+    "O que gera desperdício excessivo de ar?","Como ocorre a sustentação de uma nota longa?"]},
+  {id:"diaf", q:["O que é pressão subglótica?","Defina apoio vocal.",
+    "Quais erros você encontra com frequência ao ensinar apoio?","Como você ensina apoio atualmente?"]},
+  {id:"lar", q:["O que é glote?","O que é supraglote?","O que é subglote?",
+    "Qual a principal função da laringe?","Como a posição laríngea influencia o som?"]},
+  {id:"pregas", q:["O que é onda mucosa?","Explique a teoria mioelástica-aerodinâmica.",
+    "O que caracteriza um fechamento glótico eficiente?","O que é o modelo Body-Cover?",
+    "Como ocorre a vibração das pregas vocais?"]},
+  {id:"reg", q:["O que são Mecanismos vocais?","O que é voz mista?","Falsete é registro ou ajuste?",
+    "Como você ensina a passagem de registro?"]},
+  {id:"acres", q:["O que é frequência fundamental?","O que são harmônicos?","O que são formantes?",
+    "O que é ressonância?","O que é Singer's Formant?","Como você explica timbre para um aluno?"]},
+  {id:"pedag", q:["Como você realiza a avaliação inicial?","Como você realiza o planejamento?",
+    "Como você realiza o acompanhamento?","Como você realiza a progressão pedagógica?",
+    "Como você realiza a prescrição de exercícios?","Como você realiza a correção de erros?"]},
+  {id:"obj", q:["Qual sua maior dificuldade atualmente?","Qual assunto mais deseja dominar?",
+    "O que define um Treinador Vocal de excelência?"]}
+];
+const ADJUSTMENTS = ["Twang","Belt","Mix Belt","Sob","Speech","Falsete"];
+const ADJ_DIMS = [["fis","Objetivo fisiológico"],["aco","Objetivo acústico"],["est","Aplicação estilística"]];
+const CASES = [
+  {n:1, perfil:"Cantor — 15 anos — MPB / POP", q:["O que está acontecendo?","Por que está acontecendo?","Como interviria?","Quais exercícios aplicaria?"]},
+  {n:2, perfil:"Cantor — 35 anos — Gospel / Worship", q:["Qual estrutura pode estar envolvida?","Como diferenciar nasalidade funcional de patológica?","Quais exercícios aplicaria?","Como explicaria o problema para o aluno?"]},
+  {n:3, perfil:"Cantora — 22 anos — POP", q:["Qual hipótese funcional?","O fechamento glótico parece eficiente?","Como isso afeta a acústica da voz?","Quais exercícios utilizaria?","Como avaliaria a evolução?"]},
+  {n:4, perfil:"Cantor — 28 anos — Gospel — Barítono", q:["O que pode estar acontecendo?","Quais estruturas podem estar sendo sobrecarregadas?","Que hipótese funcional você levantaria?","Qual seria sua primeira estratégia de intervenção?","Que exercícios utilizaria?"]},
+  {n:5, perfil:"Cantor — 31 anos — Rock", q:["O volume está sendo produzido de forma eficiente?","Qual o risco fisiológico?","Como diferenciar intensidade de compressão?","Que ajustes poderiam ser explorados?"]},
+  {n:6, perfil:"Cantora — 42 anos — Pop", q:["O aumento da altura laríngea é necessariamente um problema?","Quando se torna prejudicial?","Como avaliaria funcionalmente?","Quais intervenções tentaria?"]},
+  {n:7, perfil:"Cantor — 24 anos — Sertanejo / Rock", q:["O problema está necessariamente na técnica?","Que fatores investigaria?","Como reavaliaria o planejamento?","Como definiria novas metas?"]},
+  {n:8, perfil:"Cantora profissional — 38 anos — MPB / Sertanejo", q:["Qual deve ser sua postura profissional?","O que não deve ser feito?","Quando encaminhar?","Para qual profissional encaminhar?","Como conduzir a conversa com a aluna?"]},
+  {n:9, perfil:"Cantor — 38 anos — Pop-Rock / Música Eletrônica", q:["Extensão limitada é sempre um problema? Justifique.","Quais fatores investigaria?","Como definiria objetivos realistas?","Como construiria um plano de evolução?"]},
+  {n:10, perfil:"Cantora — 22 anos — Gospel", q:["Como a língua influencia a fonação?","Como essa tensão afeta a acústica?","Quais exercícios utilizaria?","Como avaliaria melhora?"]},
+  {n:14, perfil:"Novo aluno", q:["Quais informações adicionais você coletaria?","O que investigaria primeiro?","Como estruturaria a avaliação inicial?","Quais hipóteses levantaria?","Quais seriam seus critérios para encaminhamento clínico?"]}
+];
+const BELIEFS_COUNT = 23;
+
+const SCORE_AREAS = [
+  ["anatomia","Anatomia",15],["fisiologia","Fisiologia",15],["acustica","Acústica",15],
+  ["saude","Saúde Vocal",10],["diagnostico","Diagnóstico",10],
+  ["pedagogia","Pedagogia e Planejamento",15],["clinico","Raciocínio Clínico Pedagógico",20]
+];
+
+const labels = {}, QUESTION_AREA = {};
+function buildSchema(){
+  labels.idade="Idade"; labels.cidade="Cidade"; labels.estado="Estado"; labels.telefone="Telefone";
+  labels.formacao_principal="Formação"; labels.formacao_outros="Formação — Outros, qual?";
+  labels.anos_canta="Há quantos anos canta?"; labels.anos_ensina="Há quantos anos ensina canto?";
+  labels.num_alunos="Quantos alunos atende atualmente?"; labels.formacao_vocologia="Já participou de formações em vocologia?";
+  labels.formacao_vocologia_quais="Formações em vocologia — quais?";
+  labels.estilos="Estilos que trabalha"; labels.estilos_outros="Estilos — Outros, quais?";
+
+  TEXT_SECTIONS.forEach(sec=>{
+    sec.q.forEach((qtext,i)=>{
+      const key = sec.id+"_"+i;
+      labels[key]=qtext; QUESTION_AREA[key]=AREA_BY_SECTION[sec.id];
+    });
+  });
+
+  labels.musc_agudos="Qual músculo predomina nos agudos?";
+  labels.musc_graves="Qual músculo predomina nos graves?";
+  labels.musc_coord="Como ocorre a coordenação CT/TA?";
+  ["abrev_CT","abrev_TA","abrev_CAL","abrev_CAP","abrev_IA","musc_agudos","musc_graves","musc_coord"].forEach(k=>QUESTION_AREA[k]='anatomia');
+
+  labels.m0="Diferencie M0"; labels.m1="Diferencie M1"; labels.m2="Diferencie M2"; labels.m3="Diferencie M3";
+  ["m0","m1","m2","m3"].forEach(k=>QUESTION_AREA[k]='fisiologia');
+
+  labels.art_lingua="Função da língua"; labels.art_mandibula="Função da mandíbula";
+  labels.art_labios="Função dos lábios"; labels.art_palato_mole="Função do palato mole";
+  labels.art_palato_duro="Função do palato duro"; labels.art_tensoes="Como tensões articulatórias afetam a voz?";
+  ["art_lingua","art_mandibula","art_labios","art_palato_mole","art_palato_duro","art_tensoes"].forEach(k=>QUESTION_AREA[k]='fisiologia');
+
+  ADJUSTMENTS.forEach(adj=>{
+    const key0 = adj.toLowerCase().replace(/\s+/g,'_');
+    ADJ_DIMS.forEach(([d,dl])=>{ const key="adj_"+key0+"_"+d; labels[key]=adj+" — "+dl; QUESTION_AREA[key]='acustica'; });
+  });
+
+  for(let i=1;i<=5;i++){ labels["risco_"+i]="Fator de risco "+i; QUESTION_AREA["risco_"+i]='saude'; }
+  for(let i=1;i<=5;i++){ labels["alerta_"+i]="Sinal de alerta "+i; QUESTION_AREA["alerta_"+i]='saude'; }
+  labels.encam_otorrino="Quando encaminhar para otorrinolaringologista?"; QUESTION_AREA.encam_otorrino='saude';
+  labels.encam_fono="Quando encaminhar para fonoaudiólogo?"; QUESTION_AREA.encam_fono='saude';
+  ["Soprosidade","Compressão","Quebras","Fadiga","Nasalidade excessiva"].forEach(s=>{
+    const k="ident_"+s.toLowerCase().replace(/\s+/g,'_').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    labels[k]="Como você identifica: "+s+"?"; QUESTION_AREA[k]='diagnostico';
+  });
+
+  CASES.forEach(c=>{
+    c.q.forEach((qtext,i)=>{
+      const key = "caso"+c.n+"_"+i;
+      labels[key]="Caso "+c.n+" — "+qtext; QUESTION_AREA[key]='clinico';
+    });
+  });
+
+  for(let i=0;i<BELIEFS_COUNT;i++){ labels["crenca_"+i]="Crença "+(i+1)+" (1–5, não pontuada)"; }
+}
+buildSchema();
+const AREA_TOTALS = {};
+Object.values(QUESTION_AREA).forEach(a=>{ AREA_TOTALS[a]=(AREA_TOTALS[a]||0)+1; });
+
+function classify(pct){
+  if(pct<=25) return "Professor Intuitivo — ensina pela experiência";
+  if(pct<=50) return "Professor Técnico — possui bases conceituais";
+  if(pct<=75) return "Professor Avançado — correlaciona teoria e prática";
+  if(pct<=90) return "Treinador Vocal — diagnóstico funcional consistente";
+  return "Especialista em Treinamento Vocal";
+}
+function formatAnswer(v){ if(Array.isArray(v)) return v.length? v.join(', ') : ''; return v || ''; }
+
+async function loadAll(){
+  const res = await fetch(APPS_SCRIPT_URL, {method:'GET'});
+  const json = await res.json();
+  CACHE.submissions1 = json.submissions1 || {};
+  CACHE.submissions2 = json.submissions2 || {};
+  CACHE.releases = json.releases || [];
+  CACHE.corrections = json.corrections || {};
+}
+
+async function renderList(){
+  const listBox = document.getElementById('prof-list');
+  listBox.innerHTML = '<p class="sec-hint">Carregando respostas…</p>';
+  await loadAll();
+  const emails = Array.from(new Set([...Object.keys(CACHE.submissions1), ...Object.keys(CACHE.submissions2)]));
+  if(emails.length===0){ listBox.innerHTML = '<p class="sec-hint">Nenhuma resposta recebida ainda.</p>'; return; }
+  const rows = emails.map(email=>{
+    const s1 = CACHE.submissions1[email]; const s2 = CACHE.submissions2[email];
+    const name = (s1&&s1.studentName) || (s2&&s2.studentName) || email;
+    const date = (s1&&s1.submittedAt) || (s2&&s2.submittedAt);
+    return {email, name, date, s1, s2};
+  }).sort((a,b)=> new Date(b.date) - new Date(a.date));
+  listBox.innerHTML='';
+  rows.forEach(r=>{
+    const corr = CACHE.corrections[r.email];
+    const tags = [];
+    tags.push(el('span',{class:'tag '+(r.s1?'done':'pend')}, r.s1?'Parte 1 enviada':'Parte 1 pendente'));
+    if(r.s1){
+      const released = CACHE.releases.includes(r.email);
+      if(r.s2) tags.push(el('span',{class:'tag done'},'Parte 2 enviada'));
+      else if(released) tags.push(el('span',{class:'tag pend'},'Parte 2 liberada'));
+      else tags.push(el('span',{class:'tag wait'},'Parte 2 não liberada'));
+    }
+    if(corr) tags.push(el('span',{class:'tag done'},'Corrigido — '+corr.totalPercent+'%'));
+    const card = el('div',{class:'subcard', onclick:()=>openStudent(r)},
+      el('div',{class:'srow'}, el('span',{class:'sname'},r.name), el('span',{class:'sdate'}, new Date(r.date).toLocaleString('pt-BR'))),
+      el('div',{},r.email),
+      el('div',{},tags)
+    );
+    listBox.appendChild(card);
+  });
+}
+
+async function releaseStudent(email, btn){
+  btn.disabled = true; btn.textContent='Liberando...';
+  try{
+    await fetch(APPS_SCRIPT_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({type:'release', email, releasedAt:new Date().toISOString()})});
+    CACHE.releases.push(email.toLowerCase());
+    btn.textContent='Liberado ✓';
+  }catch(e){ btn.disabled=false; btn.textContent='Tentar novamente'; console.error(e); }
+}
+
+async function openStudent(r){
+  const box = document.getElementById('prof-detail');
+  document.getElementById('prof-list-wrap').classList.add('hidden');
+  box.classList.remove('hidden');
+  box.innerHTML='';
+  box.appendChild(el('button',{class:'detail-back',onclick:backToList},"\u2190 Voltar para a lista"));
+  box.appendChild(el('h2',{style:'font-family:Georgia,serif;margin:0 0 4px;'},r.name));
+  box.appendChild(el('p',{class:'sec-hint'}, r.email));
+
+  if(r.s1 && !r.s2){
+    const released = CACHE.releases.includes(r.email);
+    const bar = el('div',{class:'releasebar'},
+      el('span',{style:'font-size:13.5px;'}, released? 'Parte 2 já liberada para este aluno.' : 'Parte 2 ainda não liberada.'),
+    );
+    if(!released){
+      const btn = el('button',{class:'tealbtn',onclick:(e)=>releaseStudent(r.email, e.target)},'Liberar Parte 2');
+      bar.appendChild(btn);
+    }
+    box.appendChild(bar);
+  }
+
+  const answers = Object.assign({}, r.s1?r.s1.answers:{}, r.s2?r.s2.answers:{});
+
+  const scoreCard = el('section',{class:'card'});
+  scoreCard.appendChild(el('h2',{},'Pontuação por área'));
+  const existing = CACHE.corrections[r.email] || null;
+  const inputs = {};
+  SCORE_AREAS.forEach(([key,name,max])=>{
+    const row = el('div',{class:'score-grid'});
+    row.appendChild(el('span',{class:'areaname'},name+' (máx. '+max+')'));
+    const inp = el('input',{type:'number',min:'0',max:String(max),step:'1'});
+    inp.value = existing && existing.scores && (existing.scores[key]!==undefined) ? existing.scores[key] : '';
+    row.appendChild(inp);
+    inputs[key]=inp;
+    scoreCard.appendChild(row);
+  });
+  const totalNumEl = el('div',{class:'tnum'},'0%');
+  const totalClassEl = el('div',{class:'tclass'},'—');
+  const currentChecks = Object.assign({}, (existing && existing.checks) || {});
+  const totalBox = el('div',{class:'totalbox'},
+    el('div',{},totalNumEl,totalClassEl),
+    el('button',{class:'secondary',onclick:()=>saveCorrection(r, inputs, totalBox, currentChecks)},'Salvar correção')
+  );
+  scoreCard.appendChild(totalBox);
+  const maxSum = SCORE_AREAS.reduce((s,a)=>s+a[2],0);
+  function recompute(){
+    let sum=0;
+    SCORE_AREAS.forEach(([key,,max])=>{ const v=parseFloat(inputs[key].value); if(!isNaN(v)) sum+=Math.min(v,max); });
+    const pct = Math.round((sum/maxSum)*100);
+    totalNumEl.textContent = pct+'%'; totalClassEl.textContent = classify(pct);
+  }
+  function recomputeFromChecks(){
+    const corrects = {};
+    Object.keys(QUESTION_AREA).forEach(k=>{ if(currentChecks[k]){ const a=QUESTION_AREA[k]; corrects[a]=(corrects[a]||0)+1; } });
+    SCORE_AREAS.forEach(([key,,max])=>{
+      const total = AREA_TOTALS[key]||0;
+      if(total>0) inputs[key].value = Math.round(((corrects[key]||0)/total)*max);
+    });
+    recompute();
+  }
+  Object.values(inputs).forEach(i=>i.addEventListener('input',recompute));
+  recompute();
+  box.appendChild(scoreCard);
+
+  const ansCard = el('section',{class:'card'});
+  ansCard.appendChild(el('h2',{},'Respostas completas'));
+  ansCard.appendChild(el('p',{class:'sec-hint'},"Marque \u201cCorreto\u201d nas perguntas que o aluno acertou — a pontuação acima é recalculada automaticamente. Dados pessoais e crenças não entram na pontuação."));
+  Object.keys(labels).forEach(key=>{
+    const val = formatAnswer(answers[key]);
+    const top = el('div',{style:'display:flex;justify-content:space-between;align-items:flex-start;gap:10px;'});
+    top.appendChild(el('div',{class:'q'},labels[key]));
+    if(QUESTION_AREA[key]){
+      const cb = el('input',{type:'checkbox'});
+      cb.checked = !!currentChecks[key];
+      cb.addEventListener('change', ()=>{ currentChecks[key]=cb.checked; recomputeFromChecks(); });
+      top.appendChild(el('label',{style:'display:flex;align-items:center;gap:4px;font-size:11.5px;color:var(--ink-soft);white-space:nowrap;cursor:pointer;'}, cb, 'Correto'));
+    }
+    const qa = el('div',{class:'qa'}, top, el('div',{class: val? 'a':'a empty'}, val || '(sem resposta)'));
+    ansCard.appendChild(qa);
+  });
+  box.appendChild(ansCard);
+}
+
+async function saveCorrection(r, inputs, totalBox, checks){
+  const scores = {};
+  SCORE_AREAS.forEach(([key,,max])=>{ const v=parseFloat(inputs[key].value); scores[key]= isNaN(v)?0:Math.min(v,max); });
+  const maxSum = SCORE_AREAS.reduce((s,a)=>s+a[2],0);
+  const sum = Object.values(scores).reduce((a,b)=>a+b,0);
+  const pct = Math.round((sum/maxSum)*100);
+  const record = {type:'correction', email:r.email, studentName:r.name, scores, checks:checks||{}, totalPercent:pct, classification:classify(pct), correctedAt:new Date().toISOString()};
+  try{
+    await fetch(APPS_SCRIPT_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(record)});
+    CACHE.corrections[r.email.toLowerCase()] = record;
+    const msg = el('span',{style:'font-size:12.5px;color:var(--green);margin-left:8px;'},'Correção salva.');
+    totalBox.appendChild(msg);
+    setTimeout(()=>msg.remove(),2500);
+  }catch(e){ console.error(e); }
+}
+
+function backToList(){
+  document.getElementById('prof-detail').classList.add('hidden');
+  document.getElementById('prof-list-wrap').classList.remove('hidden');
+}
+
+function buildProfView(){
+  const v = document.getElementById('view-prof');
+  v.innerHTML='';
+  const wrap = el('div',{id:'prof-list-wrap'});
+  wrap.appendChild(el('h2',{style:'font-family:Georgia,serif;font-size:20px;margin:18px 0 12px;'},'Respostas recebidas'));
+  wrap.appendChild(el('button',{class:'secondary',style:'margin-bottom:14px;',onclick:renderList},'Atualizar lista'));
+  wrap.appendChild(el('div',{class:'teach-list',id:'prof-list'}));
+  v.appendChild(wrap);
+  v.appendChild(el('div',{id:'prof-detail',class:'hidden'}));
+  renderList();
+}
+
+const gate = document.getElementById('view-gate');
+const gateCodeInp = el('input',{type:'text',id:'gate-code',placeholder:'Código de acesso'});
+function tryEnter(){
+  const code = gateCodeInp.value;
+  if(code===TEACHER_CODE){
+    gate.classList.add('hidden');
+    document.getElementById('view-prof').classList.remove('hidden');
+    buildProfView();
+  } else {
+    gateCodeInp.style.borderColor='var(--red)';
+  }
+}
+gate.appendChild(el('div',{class:'gatebox'},
+  el('p',{style:'font-size:14px;color:var(--ink-soft);'},'Acesso do professor'),
+  gateCodeInp,
+  el('button',{class:'primary',style:'width:100%;',onclick:tryEnter},'Entrar')
+));
+gateCodeInp.addEventListener('keydown', e=>{ if(e.key==='Enter') tryEnter(); });
+</script>
+</body>
+</html>

@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dossiê — Parte 1 · Fundamentos Teóricos</title>
+<style>
+:root{
+  --ink:#16202A; --ink-soft:#3C4A57; --paper:#FAF7F2; --paper-2:#F0EBE0;
+  --gold:#C98A3E; --gold-dark:#8C5C20; --teal:#2F6F6B; --teal-dark:#1E4E4B; --line:#DCD4C2;
+  --red:#B3432F; --green:#3C7A4A;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.5;}
+.wrap{max-width:880px;margin:0 auto;padding:0 20px 80px;}
+header.top{background:var(--ink);color:var(--paper);padding:36px 20px 28px;position:relative;overflow:hidden;}
+header.top::after{content:"";position:absolute;left:0;right:0;bottom:0;height:5px;background:linear-gradient(90deg,var(--gold),var(--teal));}
+.top-inner{max-width:880px;margin:0 auto;}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:600;}
+h1.title{font-family:Georgia,"Times New Roman",serif;font-size:clamp(24px,4vw,34px);margin:8px 0 6px;font-weight:700;}
+.subtitle{color:#C9D1D6;font-size:14px;max-width:560px;}
+.waveform{display:flex;align-items:flex-end;gap:3px;height:22px;margin-top:18px;}
+.waveform span{display:block;width:3px;background:var(--gold);opacity:.85;border-radius:2px;}
+section.card{background:#fff;border:1px solid var(--line);border-radius:10px;margin-top:22px;padding:24px 24px 26px;}
+section.card h2{font-family:Georgia,"Times New Roman",serif;font-size:19px;margin:0 0 4px;color:var(--ink);border-bottom:2px solid var(--paper-2);padding-bottom:10px;}
+section.card .sec-hint{font-size:12.5px;color:var(--ink-soft);margin:0 0 16px;}
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:13.5px;font-weight:600;margin-bottom:5px;color:var(--ink);}
+input[type=text],input[type=number],input[type=tel],input[type=email],textarea,select{
+  width:100%;font:inherit;font-size:14px;padding:9px 11px;border:1px solid var(--line);
+  border-radius:6px;background:var(--paper);color:var(--ink);}
+textarea{min-height:64px;resize:vertical;}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--teal);outline-offset:1px;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:560px){.row2{grid-template-columns:1fr;}}
+.choices{display:flex;flex-wrap:wrap;gap:8px;}
+.choices label{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;border:1px solid var(--line);border-radius:20px;padding:6px 12px;cursor:pointer;background:var(--paper);}
+.choices input{width:auto;}
+.scale-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+.scale-row .slabel{font-size:13.5px;font-weight:600;min-width:160px;}
+.scale-opts{display:flex;gap:4px;}
+.scale-opts label{width:26px;height:26px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:5px;font-size:11px;cursor:pointer;background:var(--paper);}
+.scale-opts input{display:none;}
+.scale-opts input:checked + span{background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;width:100%;height:100%;border-radius:4px;}
+.adj-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+@media(max-width:560px){.adj-grid{grid-template-columns:1fr;}}
+.adj-grid .field label{font-size:12px;color:var(--ink-soft);}
+.submitbar{position:sticky;bottom:0;background:var(--paper);border-top:1px solid var(--line);padding:14px 0;margin-top:10px;display:flex;justify-content:flex-end;gap:10px;}
+button.primary{font:inherit;font-weight:700;font-size:14.5px;padding:12px 22px;border-radius:7px;border:none;background:var(--gold);color:#241500;cursor:pointer;}
+button.primary:hover{background:var(--gold-dark);color:#fff;}
+button.primary:disabled{opacity:.5;cursor:default;}
+.statusmsg{font-size:13px;margin-top:10px;padding:10px 12px;border-radius:6px;}
+.statusmsg.ok{background:#E6F1E9;color:var(--green);}
+.statusmsg.err{background:#FBE7E3;color:var(--red);}
+.hidden{display:none !important;}
+.gatebox{max-width:420px;margin:60px auto;text-align:center;}
+.gatebox .field{text-align:left;}
+.lockmsg{max-width:520px;margin:70px auto;text-align:center;background:#fff;border:1px solid var(--line);border-radius:10px;padding:32px 26px;}
+.lockmsg h2{font-family:Georgia,serif;margin:0 0 10px;}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <div class="eyebrow">Formação Profissional em Treinamento Vocal — Parte 1 de 2</div>
+    <h1 class="title">Dossiê Diagnóstico — Fundamentos Teóricos</h1>
+    <p class="subtitle">Anatomia, fisiologia, acústica, saúde vocal e pedagogia. A Parte 2 (casos clínicos e crenças) será liberada pelo professor após a correção desta etapa.</p>
+    <div class="waveform" id="wave"></div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div id="view-gate"></div>
+  <div id="view-form" class="hidden"></div>
+</div>
+
+<script>
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxTuXuWk1BiQdUWdYsZNdmjQ5Nt00d653cK15DSVUhjSsM5qkF8yJ6F0iZ_6qfGUJSMNw/exec";
+
+for(let i=0;i<28;i++){
+  const h = 6 + Math.round(Math.abs(Math.sin(i*0.7))*16);
+  const s = document.createElement('span'); s.style.height = h+'px';
+  document.getElementById('wave').appendChild(s);
+}
+
+function el(tag, attrs={}, ...children){
+  const e = document.createElement(tag);
+  for(const k in attrs){
+    if(k==='html') e.innerHTML = attrs[k];
+    else if(k.startsWith('on')) e.addEventListener(k.slice(2), attrs[k]);
+    else e.setAttribute(k, attrs[k]);
+  }
+  children.flat().forEach(c=>{ if(c) e.appendChild(typeof c==='string'?document.createTextNode(c):c); });
+  return e;
+}
+
+const SCALE_AREAS = [
+  {group:"Anatomia Vocal", items:[
+    ["anat_resp","Sistema Respiratório"],["anat_diaf","Diafragma"],["anat_lar","Laringe"],
+    ["anat_pregas","Pregas Vocais"],["anat_musc","Musculatura Intrínseca"]]},
+  {group:"Fisiologia Vocal", items:[
+    ["fis_resp","Respiração"],["fis_fon","Fonação"],["fis_resson","Ressonância"],["fis_artic","Articulação"]]},
+  {group:"Acústica", items:[
+    ["aco_freq","Frequência"],["aco_harm","Harmônicos"],["aco_form","Formantes"],["aco_sing","Singer's Formant"]]}
+];
+
+const TEXT_SECTIONS = [
+  {id:"fund", title:"Fundamentos da Ciência da Voz", q:[
+    "O que é voz?","O que diferencia voz falada de voz cantada?","O que é vocologia?",
+    "Qual o papel do treinador vocal?","Cite os quatro sistemas envolvidos na produção vocal."]},
+  {id:"resp", title:"Sistema Respiratório", q:[
+    "Qual a função dos pulmões na produção vocal?","O que é fluxo aéreo?",
+    "O que gera desperdício excessivo de ar?","Como ocorre a sustentação de uma nota longa?"]},
+  {id:"diaf", title:"Diafragma e Apoio Vocal", q:[
+    "O que é pressão subglótica?","Defina apoio vocal.",
+    "Quais erros você encontra com frequência ao ensinar apoio?","Como você ensina apoio atualmente?"]},
+  {id:"lar", title:"Anatomia da Laringe", q:[
+    "O que é glote?","O que é supraglote?","O que é subglote?",
+    "Qual a principal função da laringe?","Como a posição laríngea influencia o som?"]},
+  {id:"pregas", title:"Pregas Vocais e Produção da Voz", q:[
+    "O que é onda mucosa?","Explique a teoria mioelástica-aerodinâmica.",
+    "O que caracteriza um fechamento glótico eficiente?","O que é o modelo Body-Cover?",
+    "Como ocorre a vibração das pregas vocais?"]},
+  {id:"reg", title:"Registros Vocais", q:[
+    "O que são Mecanismos vocais?","O que é voz mista?","Falsete é registro ou ajuste?",
+    "Como você ensina a passagem de registro?"]},
+  {id:"acres", title:"Acústica e Ressonância", q:[
+    "O que é frequência fundamental?","O que são harmônicos?","O que são formantes?",
+    "O que é ressonância?","O que é Singer's Formant?","Como você explica timbre para um aluno?"]},
+  {id:"pedag", title:"Pedagogia e Treinamento Vocal", q:[
+    "Como você realiza a avaliação inicial?","Como você realiza o planejamento?",
+    "Como você realiza o acompanhamento?","Como você realiza a progressão pedagógica?",
+    "Como você realiza a prescrição de exercícios?","Como você realiza a correção de erros?"]},
+  {id:"obj", title:"Objetivos da Formação", q:[
+    "Qual sua maior dificuldade atualmente?","Qual assunto mais deseja dominar?",
+    "O que define um Treinador Vocal de excelência?"]}
+];
+
+const ADJUSTMENTS = ["Twang","Belt","Mix Belt","Sob","Speech","Falsete"];
+const ADJ_DIMS = [["fis","Objetivo fisiológico"],["aco","Objetivo acústico"],["est","Aplicação estilística"]];
+
+function sectionEl(title,hint,children){
+  const s = el('section',{class:'card'});
+  s.appendChild(el('h2',{},title));
+  if(hint) s.appendChild(el('p',{class:'sec-hint'},hint));
+  children.forEach(c=>s.appendChild(c));
+  return s;
+}
+function fieldsRow(fields){ return el('div',{class:'row2'},fields); }
+function textField(key,label,type){
+  const wrap = el('div',{class:'field'});
+  wrap.appendChild(el('label',{for:key},label));
+  wrap.appendChild(el('input',{type:type||'text',id:key,name:key}));
+  return wrap;
+}
+function textareaField(key,label){
+  const wrap = el('div',{class:'field'});
+  wrap.appendChild(el('label',{for:key},label));
+  wrap.appendChild(el('textarea',{id:key,name:key}));
+  return wrap;
+}
+function radioField(key,label,opts){
+  const wrap = el('div',{class:'field'});
+  if(label) wrap.appendChild(el('label',{},label));
+  const c = el('div',{class:'choices'});
+  opts.forEach(o=>{ c.appendChild(el('label',{}, el('input',{type:'radio',name:key,value:o}), o)); });
+  wrap.appendChild(c);
+  return wrap;
+}
+function checkField(key,label,opts){
+  const wrap = el('div',{class:'field'});
+  if(label) wrap.appendChild(el('label',{},label));
+  const c = el('div',{class:'choices'});
+  opts.forEach(o=>{ c.appendChild(el('label',{}, el('input',{type:'checkbox',name:key,value:o}), o)); });
+  wrap.appendChild(c);
+  return wrap;
+}
+function scaleRow(key,label,max){
+  const row = el('div',{class:'scale-row'});
+  row.appendChild(el('span',{class:'slabel'},label));
+  const opts = el('div',{class:'scale-opts'});
+  for(let i=0;i<=max;i++){ opts.appendChild(el('label',{}, el('input',{type:'radio',name:key,value:i}), el('span',{},String(i)))); }
+  row.appendChild(opts);
+  return row;
+}
+
+function buildForm(nome, email){
+  const f = document.createElement('form');
+  f.id = 'mainform';
+
+  const idSec = sectionEl("Identificação do Professor","",[
+    fieldsRow([textField("nome","Nome"),textField("idade","Idade")]),
+    fieldsRow([textField("cidade","Cidade"),textField("estado","Estado")]),
+    textField("telefone","Telefone")
+  ]);
+  f.appendChild(idSec);
+
+  const formOpts = ["Música","Bacharelado","Licenciatura","Fonoaudiologia","Educação Musical","Cursos Livres","Musicoterapia","Outros"];
+  f.appendChild(sectionEl("Formação", "Marque uma ou mais opções.", [
+    checkField("formacao_principal","Qual sua formação?",formOpts),
+    textField("formacao_outros","Se 'Outros', qual?")
+  ]));
+
+  f.appendChild(sectionEl("Experiência", "", [
+    fieldsRow([textField("anos_canta","Há quantos anos canta?"),textField("anos_ensina","Há quantos anos ensina canto?")]),
+    fieldsRow([textField("num_alunos","Quantos alunos atende atualmente?"),
+      radioField("formacao_vocologia","Já participou de formações em vocologia?",["Sim","Não"])]),
+    textField("formacao_vocologia_quais","Se sim, quais?")
+  ]));
+
+  const estilos = ["Gospel","Worship","MPB","Pop","Rock","Sertanejo","Teatro Musical","Erudito","Coral","Outros"];
+  f.appendChild(sectionEl("Perfil de Atuação", "Marque os estilos que trabalha.", [
+    checkField("estilos","",estilos),
+    textField("estilos_outros","Em caso de 'Outros', liste")
+  ]));
+
+  const scaleSec = sectionEl("Autoavaliação de Competências","Para cada item abaixo, clique no número que melhor representa seu nível atual de compreensão sobre aquele assunto. 0 = nenhum conhecimento, 10 = domínio completo.",[]);
+  scaleSec.appendChild(el('div',{style:'display:flex;justify-content:space-between;max-width:320px;font-size:11.5px;color:var(--ink-soft);margin:-6px 0 16px;'},
+    el('span',{},'0 · Nenhum conhecimento'), el('span',{},'10 · Domínio completo')));
+  SCALE_AREAS.forEach(group=>{
+    scaleSec.appendChild(el('p',{style:'font-weight:700;font-size:14px;margin:14px 0 8px;'},group.group));
+    group.items.forEach(([key,label])=>{ scaleSec.appendChild(scaleRow(key,label,10)); });
+  });
+  f.appendChild(scaleSec);
+
+  TEXT_SECTIONS.forEach(sec=>{
+    const body = sec.q.map((qtext,i)=>textareaField(sec.id+"_"+i,qtext));
+    f.appendChild(sectionEl(sec.title,"",body));
+  });
+
+  f.appendChild(sectionEl("Musculatura Intrínseca da Laringe","Complete as abreviações com os nomes dos músculos.",[
+    fieldsRow([textField("abrev_CT","CT"),textField("abrev_TA","TA")]),
+    fieldsRow([textField("abrev_CAL","CAL"),textField("abrev_CAP","CAP")]),
+    textField("abrev_IA","IA"),
+    textareaField("musc_agudos","Qual músculo predomina nos agudos?"),
+    textareaField("musc_graves","Qual músculo predomina nos graves?"),
+    textareaField("musc_coord","Como ocorre a coordenação CT/TA?")
+  ]));
+
+  f.appendChild(sectionEl("Registros — Mecanismos Vocais","Diferencie cada mecanismo.",[
+    textareaField("m0","M0"),textareaField("m1","M1"),textareaField("m2","M2"),textareaField("m3","M3")
+  ]));
+
+  f.appendChild(sectionEl("Sistema Articulador","Descreva a função de cada estrutura.",[
+    fieldsRow([textField("art_lingua","Língua"),textField("art_mandibula","Mandíbula")]),
+    fieldsRow([textField("art_labios","Lábios"),textField("art_palato_mole","Palato Mole")]),
+    textField("art_palato_duro","Palato Duro"),
+    textareaField("art_tensoes","Como tensões articulatórias afetam a voz? Justifique.")
+  ]));
+
+  const adjSec = sectionEl("Ajustes Vocais Contemporâneos","Para cada ajuste: objetivo fisiológico, objetivo acústico e aplicação estilística.",[]);
+  ADJUSTMENTS.forEach(adj=>{
+    const key0 = adj.toLowerCase().replace(/\s+/g,'_');
+    adjSec.appendChild(el('p',{style:'font-weight:700;font-size:13.5px;margin:14px 0 6px;'},adj));
+    const grid = el('div',{class:'adj-grid'});
+    ADJ_DIMS.forEach(([d,dl])=>{ grid.appendChild(textareaField("adj_"+key0+"_"+d,dl)); });
+    adjSec.appendChild(grid);
+  });
+  f.appendChild(adjSec);
+
+  const saudeSec = sectionEl("Saúde e Diagnóstico Vocal","",[]);
+  saudeSec.appendChild(el('p',{style:'font-weight:700;font-size:13.5px;margin:6px 0 2px;'},"Cite 5 fatores de risco para a saúde vocal"));
+  saudeSec.appendChild(el('p',{style:'font-size:12px;color:var(--ink-soft);margin:0 0 10px;'},"Pense em hábitos, ambiente ou uso vocal inadequado (ex.: tabagismo, refluxo não tratado, falar muito sem hidratação)."));
+  for(let i=1;i<=5;i++){ saudeSec.appendChild(textField("risco_"+i,"Fator de risco "+i)); }
+  saudeSec.appendChild(el('p',{style:'font-weight:700;font-size:13.5px;margin:14px 0 2px;'},"Cite 5 sinais de alerta para encaminhamento clínico"));
+  saudeSec.appendChild(el('p',{style:'font-size:12px;color:var(--ink-soft);margin:0 0 10px;'},"Sinais que indicam encaminhamento a um profissional de saúde antes de continuar o treinamento (ex.: rouquidão persistente por mais de 30 dias, dor ao falar ou cantar)."));
+  for(let i=1;i<=5;i++){ saudeSec.appendChild(textField("alerta_"+i,"Sinal de alerta "+i)); }
+  saudeSec.appendChild(textareaField("encam_otorrino","Quando encaminhar para otorrinolaringologista?"));
+  saudeSec.appendChild(textareaField("encam_fono","Quando encaminhar para fonoaudiólogo?"));
+  ["Soprosidade","Compressão","Quebras","Fadiga","Nasalidade excessiva"].forEach(s=>{
+    const k="ident_"+s.toLowerCase().replace(/\s+/g,'_').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    saudeSec.appendChild(textareaField(k,"Como você identifica: "+s+"?"));
+  });
+  f.appendChild(saudeSec);
+
+  const submitbar = el('div',{class:'submitbar'},
+    el('span',{id:'savemsg'}),
+    el('button',{type:'button',class:'primary',id:'btnsubmit',onclick:submitForm},"Enviar Parte 1")
+  );
+  f.appendChild(submitbar);
+
+  document.getElementById('view-form').appendChild(f);
+  f.elements['nome'].value = nome;
+}
+
+function collectAnswers(form){
+  const data = {};
+  Array.from(form.elements).forEach(elm=>{
+    if(!elm.name) return;
+    if(elm.type==='radio'){ if(elm.checked) data[elm.name]=elm.value; else if(!(elm.name in data)) data[elm.name]=data[elm.name]||""; }
+    else if(elm.type==='checkbox'){ if(!data[elm.name]) data[elm.name]=[]; if(elm.checked) data[elm.name].push(elm.value); }
+    else if(elm.type!=='button'){ data[elm.name]=elm.value; }
+  });
+  return data;
+}
+
+let CURRENT_EMAIL = '';
+
+async function submitForm(){
+  const form = document.getElementById('mainform');
+  const msg = document.getElementById('savemsg');
+  const nome = form.elements['nome'].value.trim();
+  if(!nome){
+    msg.className='statusmsg err'; msg.textContent='Preencha ao menos o nome antes de enviar.';
+    return;
+  }
+  const answers = collectAnswers(form);
+  const record = {type:'submission1', studentName:nome, email:CURRENT_EMAIL, submittedAt:new Date().toISOString(), answers};
+  document.getElementById('btnsubmit').disabled = true;
+  try{
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(record)
+    });
+    let ok = true;
+    try{ const j = await res.json(); ok = j.ok !== false; }catch(e){}
+    if(!ok){
+      msg.className='statusmsg err'; msg.textContent='Este e-mail já enviou a Parte 1 anteriormente.';
+      document.getElementById('btnsubmit').textContent = 'Já enviado';
+      return;
+    }
+    msg.className='statusmsg ok';
+    msg.textContent='Parte 1 enviada com sucesso, '+nome+'! Aguarde o professor liberar a Parte 2.';
+    document.getElementById('btnsubmit').textContent = 'Enviado';
+    window.scrollTo({top:0,behavior:'smooth'});
+  }catch(err){
+    msg.className='statusmsg err'; msg.textContent='Não foi possível enviar agora. Tente novamente.';
+    document.getElementById('btnsubmit').disabled = false;
+    console.error(err);
+  }
+}
+
+function showLock(title, text){
+  document.getElementById('view-gate').innerHTML='';
+  document.getElementById('view-gate').appendChild(
+    el('div',{class:'lockmsg'}, el('h2',{},title), el('p',{},text))
+  );
+}
+
+function startGate(){
+  const gate = document.getElementById('view-gate');
+  gate.innerHTML='';
+  const nomeInp = el('input',{type:'text',placeholder:'Seu nome completo'});
+  const emailInp = el('input',{type:'email',placeholder:'Seu e-mail'});
+  const btn = el('button',{class:'primary',style:'width:100%;margin-top:8px;'},'Começar');
+  const errMsg = el('p',{class:'statusmsg err hidden'});
+  gate.appendChild(el('div',{class:'gatebox'},
+    el('p',{style:'font-size:14px;color:var(--ink-soft);'},'Digite seu nome e e-mail para começar a Parte 1.'),
+    el('div',{class:'field'},el('label',{},'Nome'),nomeInp),
+    el('div',{class:'field'},el('label',{},'E-mail'),emailInp),
+    btn, errMsg
+  ));
+  btn.addEventListener('click', async ()=>{
+    const nome = nomeInp.value.trim();
+    const email = emailInp.value.trim();
+    if(!nome || !email || !email.includes('@')){
+      errMsg.classList.remove('hidden'); errMsg.textContent='Preencha nome e e-mail válidos.'; return;
+    }
+    btn.disabled = true; btn.textContent='Verificando...';
+    try{
+      const res = await fetch(APPS_SCRIPT_URL, {method:'GET'});
+      const json = await res.json();
+      const key = email.toLowerCase();
+      if(json.submissions1 && json.submissions1[key]){
+        const sub = json.submissions1[key];
+        showLock('Parte 1 já enviada', 'Você já enviou a Parte 1 em '+new Date(sub.submittedAt).toLocaleString('pt-BR')+'. Aguarde o professor liberar a Parte 2 — você receberá o link separadamente.');
+        return;
+      }
+      CURRENT_EMAIL = email;
+      gate.classList.add('hidden');
+      document.getElementById('view-form').classList.remove('hidden');
+      buildForm(nome, email);
+    }catch(e){
+      errMsg.classList.remove('hidden'); errMsg.textContent='Erro ao verificar. Tente novamente.';
+      btn.disabled=false; btn.textContent='Começar';
+      console.error(e);
+    }
+  });
+}
+
+startGate();
+</script>
+</body>
+</html>
