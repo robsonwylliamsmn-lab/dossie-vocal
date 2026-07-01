@@ -54,10 +54,14 @@ button.primary:disabled{opacity:.5;cursor:default;}
 .statusmsg.ok{background:#E6F1E9;color:var(--green);}
 .statusmsg.err{background:#FBE7E3;color:var(--red);}
 .hidden{display:none !important;}
+.field.invalid input,.field.invalid textarea{border-color:var(--red);box-shadow:0 0 0 1px var(--red);}
+.field.invalid label{color:var(--red);}
+.scale-row.invalid .slabel{color:var(--red);font-weight:700;}
 .gatebox{max-width:420px;margin:60px auto;text-align:center;}
 .gatebox .field{text-align:left;}
 .lockmsg{max-width:520px;margin:70px auto;text-align:center;background:#fff;border:1px solid var(--line);border-radius:10px;padding:32px 26px;}
 .lockmsg h2{font-family:Georgia,serif;margin:0 0 10px;}
+.lockmsg a{color:var(--teal-dark);font-weight:700;}
 </style>
 </head>
 <body>
@@ -295,6 +299,40 @@ function collectAnswers(form){
   return data;
 }
 
+const OPTIONAL_KEYS = ['formacao_outros','formacao_vocologia_quais','estilos_outros'];
+
+function fieldLabelText(elm){
+  const fieldWrap = elm.closest('.field');
+  if(fieldWrap){ const l = fieldWrap.querySelector('label'); if(l) return l.textContent; }
+  const scaleWrap = elm.closest('.scale-row');
+  if(scaleWrap){ const l = scaleWrap.querySelector('.slabel'); if(l) return l.textContent; }
+  return elm.name;
+}
+
+function clearInvalid(form){
+  form.querySelectorAll('.invalid').forEach(e=>e.classList.remove('invalid'));
+}
+
+function validateForm(form){
+  const groups = {};
+  Array.from(form.elements).forEach(elm=>{
+    if(!elm.name || elm.type==='button') return;
+    (groups[elm.name] = groups[elm.name] || []).push(elm);
+  });
+  for(const name in groups){
+    if(OPTIONAL_KEYS.includes(name)) continue;
+    const els = groups[name];
+    const type = els[0].type;
+    const filled = (type==='radio' || type==='checkbox') ? els.some(e=>e.checked) : els[0].value.trim()!=='';
+    if(!filled){
+      const wrap = els[0].closest('.field') || els[0].closest('.scale-row');
+      if(wrap) wrap.classList.add('invalid');
+      return {valid:false, label:fieldLabelText(els[0]), wrap};
+    }
+  }
+  return {valid:true};
+}
+
 let CURRENT_EMAIL = '';
 
 async function submitForm(){
@@ -303,6 +341,14 @@ async function submitForm(){
   const nome = form.elements['nome'].value.trim();
   if(!nome){
     msg.className='statusmsg err'; msg.textContent='Preencha ao menos o nome antes de enviar.';
+    return;
+  }
+  clearInvalid(form);
+  const check = validateForm(form);
+  if(!check.valid){
+    msg.className='statusmsg err';
+    msg.textContent='Falta responder: "'+check.label+'". Role até o campo destacado em vermelho.';
+    check.wrap.scrollIntoView({behavior:'smooth', block:'center'});
     return;
   }
   const answers = collectAnswers(form);
@@ -320,7 +366,7 @@ async function submitForm(){
       return;
     }
     msg.className='statusmsg ok';
-    msg.textContent='Parte 1 enviada com sucesso, '+nome+'! Aguarde o professor liberar a Parte 2.';
+    msg.innerHTML='Parte 1 enviada com sucesso, '+nome+'! Guarde este link para acessar a Parte 2 assim que o professor liberar: <a href="dossie-parte2.html" style="color:var(--teal-dark);font-weight:700;">dossie-parte2.html</a>';
     document.getElementById('btnsubmit').textContent = 'Enviado';
     window.scrollTo({top:0,behavior:'smooth'});
   }catch(err){
@@ -330,18 +376,43 @@ async function submitForm(){
   }
 }
 
-function showLock(title, text){
+function showLock(title, text, linkHtml){
   document.getElementById('view-gate').innerHTML='';
-  document.getElementById('view-gate').appendChild(
-    el('div',{class:'lockmsg'}, el('h2',{},title), el('p',{},text))
-  );
+  const box = el('div',{class:'lockmsg'}, el('h2',{},title), el('p',{},text));
+  if(linkHtml) box.appendChild(el('p',{html:linkHtml}));
+  document.getElementById('view-gate').appendChild(box);
+}
+
+async function verify(nome, email, gate, btn, errMsg){
+  btn.disabled = true; btn.textContent='Verificando...';
+  try{
+    const res = await fetch(APPS_SCRIPT_URL, {method:'GET'});
+    const json = await res.json();
+    const key = email.toLowerCase();
+    if(json.submissions1 && json.submissions1[key]){
+      const sub = json.submissions1[key];
+      showLock('Parte 1 já enviada', 'Você já enviou a Parte 1 em '+new Date(sub.submittedAt).toLocaleString('pt-BR')+'. Aguarde o professor liberar a Parte 2.', '<a href="dossie-parte2.html">Ir para a Parte 2</a>');
+      return;
+    }
+    CURRENT_EMAIL = email;
+    gate.classList.add('hidden');
+    document.getElementById('view-form').classList.remove('hidden');
+    buildForm(nome, email);
+  }catch(e){
+    errMsg.classList.remove('hidden'); errMsg.textContent='Erro ao verificar. Tente novamente.';
+    btn.disabled=false; btn.textContent='Começar';
+    console.error(e);
+  }
 }
 
 function startGate(){
   const gate = document.getElementById('view-gate');
   gate.innerHTML='';
-  const nomeInp = el('input',{type:'text',placeholder:'Seu nome completo'});
-  const emailInp = el('input',{type:'email',placeholder:'Seu e-mail'});
+  const params = new URLSearchParams(window.location.search);
+  const qNome = params.get('nome'); const qEmail = params.get('email');
+
+  const nomeInp = el('input',{type:'text',placeholder:'Seu nome completo',value:qNome||''});
+  const emailInp = el('input',{type:'email',placeholder:'Seu e-mail',value:qEmail||''});
   const btn = el('button',{class:'primary',style:'width:100%;margin-top:8px;'},'Começar');
   const errMsg = el('p',{class:'statusmsg err hidden'});
   gate.appendChild(el('div',{class:'gatebox'},
@@ -350,32 +421,18 @@ function startGate(){
     el('div',{class:'field'},el('label',{},'E-mail'),emailInp),
     btn, errMsg
   ));
-  btn.addEventListener('click', async ()=>{
+  btn.addEventListener('click', ()=>{
     const nome = nomeInp.value.trim();
     const email = emailInp.value.trim();
     if(!nome || !email || !email.includes('@')){
       errMsg.classList.remove('hidden'); errMsg.textContent='Preencha nome e e-mail válidos.'; return;
     }
-    btn.disabled = true; btn.textContent='Verificando...';
-    try{
-      const res = await fetch(APPS_SCRIPT_URL, {method:'GET'});
-      const json = await res.json();
-      const key = email.toLowerCase();
-      if(json.submissions1 && json.submissions1[key]){
-        const sub = json.submissions1[key];
-        showLock('Parte 1 já enviada', 'Você já enviou a Parte 1 em '+new Date(sub.submittedAt).toLocaleString('pt-BR')+'. Aguarde o professor liberar a Parte 2 — você receberá o link separadamente.');
-        return;
-      }
-      CURRENT_EMAIL = email;
-      gate.classList.add('hidden');
-      document.getElementById('view-form').classList.remove('hidden');
-      buildForm(nome, email);
-    }catch(e){
-      errMsg.classList.remove('hidden'); errMsg.textContent='Erro ao verificar. Tente novamente.';
-      btn.disabled=false; btn.textContent='Começar';
-      console.error(e);
-    }
+    verify(nome, email, gate, btn, errMsg);
   });
+
+  if(qNome && qEmail){
+    verify(qNome, qEmail, gate, btn, errMsg);
+  }
 }
 
 startGate();
