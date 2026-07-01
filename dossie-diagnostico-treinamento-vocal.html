@@ -297,6 +297,9 @@ const SCORE_AREAS = [
 ];
 
 const labels = {};
+const QUESTION_AREA = {};
+const AREA_BY_SECTION = {fund:'pedagogia',resp:'fisiologia',diaf:'fisiologia',lar:'anatomia',
+  pregas:'anatomia',reg:'fisiologia',acres:'acustica',pedag:'pedagogia',obj:'pedagogia'};
 
 function buildForm(){
   const f = document.createElement('form');
@@ -349,6 +352,7 @@ function buildForm(){
     const body = sec.q.map((qtext,i)=>{
       const key = sec.id+"_"+i;
       labels[key]=qtext;
+      QUESTION_AREA[key]=AREA_BY_SECTION[sec.id];
       return textareaField(key,qtext);
     });
     f.appendChild(sectionEl(sec.title,"",body));
@@ -368,11 +372,15 @@ function buildForm(){
   labels.musc_agudos="Qual músculo predomina nos agudos?";
   labels.musc_graves="Qual músculo predomina nos graves?";
   labels.musc_coord="Como ocorre a coordenação CT/TA?";
+  ["abrev_CT","abrev_TA","abrev_CAL","abrev_CAP","abrev_IA","musc_agudos","musc_graves","musc_coord"].forEach(k=>{
+    QUESTION_AREA[k]='anatomia';
+  });
 
   f.appendChild(sectionEl("Registros — Mecanismos Vocais","Diferencie cada mecanismo.",[
     textareaField("m0","M0"),textareaField("m1","M1"),textareaField("m2","M2"),textareaField("m3","M3")
   ]));
   labels.m0="Diferencie M0"; labels.m1="Diferencie M1"; labels.m2="Diferencie M2"; labels.m3="Diferencie M3";
+  ["m0","m1","m2","m3"].forEach(k=>QUESTION_AREA[k]='fisiologia');
 
   f.appendChild(sectionEl("Sistema Articulador","Descreva a função de cada estrutura.",[
     fieldsRow([textField("art_lingua","Língua"),textField("art_mandibula","Mandíbula")]),
@@ -384,6 +392,9 @@ function buildForm(){
   labels.art_labios="Função dos lábios"; labels.art_palato_mole="Função do palato mole";
   labels.art_palato_duro="Função do palato duro";
   labels.art_tensoes="Como tensões articulatórias afetam a voz?";
+  ["art_lingua","art_mandibula","art_labios","art_palato_mole","art_palato_duro","art_tensoes"].forEach(k=>{
+    QUESTION_AREA[k]='fisiologia';
+  });
 
   const adjSec = sectionEl("Ajustes Vocais Contemporâneos","Para cada ajuste: objetivo fisiológico, objetivo acústico e aplicação estilística.",[]);
   ADJUSTMENTS.forEach(adj=>{
@@ -393,6 +404,7 @@ function buildForm(){
     ADJ_DIMS.forEach(([d,dl])=>{
       const key = "adj_"+key0+"_"+d;
       labels[key]=adj+" — "+dl;
+      QUESTION_AREA[key]='acustica';
       grid.appendChild(textareaField(key,dl));
     });
     adjSec.appendChild(grid);
@@ -402,17 +414,19 @@ function buildForm(){
   const saudeSec = sectionEl("Saúde e Diagnóstico Vocal","",[]);
   saudeSec.appendChild(el('p',{style:'font-weight:700;font-size:13.5px;margin:6px 0 2px;'},"Cite 5 fatores de risco para a saúde vocal"));
   saudeSec.appendChild(el('p',{style:'font-size:12px;color:var(--ink-soft);margin:0 0 10px;'},"Pense em hábitos, ambiente ou uso vocal inadequado que podem prejudicar a voz de um cantor — um fator por linha (ex.: tabagismo, refluxo não tratado, falar muito sem hidratação)."));
-  for(let i=1;i<=5;i++){ const k="risco_"+i; labels[k]="Fator de risco "+i; saudeSec.appendChild(textField(k,"Fator de risco "+i)); }
+  for(let i=1;i<=5;i++){ const k="risco_"+i; labels[k]="Fator de risco "+i; QUESTION_AREA[k]='saude'; saudeSec.appendChild(textField(k,"Fator de risco "+i)); }
   saudeSec.appendChild(el('p',{style:'font-weight:700;font-size:13.5px;margin:14px 0 2px;'},"Cite 5 sinais de alerta para encaminhamento clínico"));
   saudeSec.appendChild(el('p',{style:'font-size:12px;color:var(--ink-soft);margin:0 0 10px;'},"Sinais que indicam que o aluno deve ser encaminhado a um profissional de saúde (otorrino ou fonoaudiólogo) antes de continuar o treinamento vocal — um sinal por linha (ex.: rouquidão persistente por mais de 30 dias, dor ao falar ou cantar)."));
-  for(let i=1;i<=5;i++){ const k="alerta_"+i; labels[k]="Sinal de alerta "+i; saudeSec.appendChild(textField(k,"Sinal de alerta "+i)); }
+  for(let i=1;i<=5;i++){ const k="alerta_"+i; labels[k]="Sinal de alerta "+i; QUESTION_AREA[k]='saude'; saudeSec.appendChild(textField(k,"Sinal de alerta "+i)); }
   saudeSec.appendChild(textareaField("encam_otorrino","Quando encaminhar para otorrinolaringologista?"));
   saudeSec.appendChild(textareaField("encam_fono","Quando encaminhar para fonoaudiólogo?"));
   labels.encam_otorrino="Quando encaminhar para otorrinolaringologista?";
   labels.encam_fono="Quando encaminhar para fonoaudiólogo?";
+  QUESTION_AREA.encam_otorrino='saude'; QUESTION_AREA.encam_fono='saude';
   ["Soprosidade","Compressão","Quebras","Fadiga","Nasalidade excessiva"].forEach(s=>{
     const k="ident_"+s.toLowerCase().replace(/\s+/g,'_').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
     labels[k]="Como você identifica: "+s+"?";
+    QUESTION_AREA[k]='diagnostico';
     saudeSec.appendChild(textareaField(k,"Como você identifica: "+s+"?"));
   });
   f.appendChild(saudeSec);
@@ -425,6 +439,7 @@ function buildForm(){
     c.q.forEach((qtext,i)=>{
       const key = "caso"+c.n+"_"+i;
       labels[key]="Caso "+c.n+" — "+qtext;
+      QUESTION_AREA[key]='clinico';
       block.appendChild(textareaField(key,qtext));
     });
     casesSec.appendChild(block);
@@ -548,6 +563,8 @@ async function submitForm(){
 }
 
 document.getElementById('view-aluno').appendChild(buildForm());
+const AREA_TOTALS = {};
+Object.values(QUESTION_AREA).forEach(a=>{ AREA_TOTALS[a]=(AREA_TOTALS[a]||0)+1; });
 
 function classify(pct){
   if(pct<=25) return "Professor Intuitivo — ensina pela experiência";
@@ -603,6 +620,7 @@ async function openSubmission(rec){
   const scoreCard = el('section',{class:'card'});
   scoreCard.appendChild(el('h2',{},'Pontuação por área'));
   const existing = CACHE.corrections[rec.id] || null;
+  const currentChecks = Object.assign({}, (existing && existing.checks) || {});
   const inputs = {};
   SCORE_AREAS.forEach(([key,name,max])=>{
     const row = el('div',{class:'score-grid'});
@@ -613,9 +631,11 @@ async function openSubmission(rec){
     inputs[key]=inp;
     scoreCard.appendChild(row);
   });
+  const totalNumEl = el('div',{class:'tnum'},'0%');
+  const totalClassEl = el('div',{class:'tclass'},'—');
   const totalBox = el('div',{class:'totalbox'},
-    el('div',{},el('div',{class:'tnum',id:'totalnum'},'0%'),el('div',{class:'tclass',id:'totalclass'},'—')),
-    el('button',{class:'secondary',onclick:()=>saveCorrection(rec, inputs, totalBox)},'Salvar correção')
+    el('div',{},totalNumEl,totalClassEl),
+    el('button',{class:'secondary',onclick:()=>saveCorrection(rec, inputs, totalBox, currentChecks)},'Salvar correção')
   );
   scoreCard.appendChild(totalBox);
   const maxSum = SCORE_AREAS.reduce((s,a)=>s+a[2],0);
@@ -623,8 +643,8 @@ async function openSubmission(rec){
     let sum=0;
     SCORE_AREAS.forEach(([key,,max])=>{ const v=parseFloat(inputs[key].value); if(!isNaN(v)) sum+=Math.min(v,max); });
     const pct = Math.round((sum/maxSum)*100);
-    document.getElementById('totalnum').textContent = pct+'%';
-    document.getElementById('totalclass').textContent = classify(pct);
+    totalNumEl.textContent = pct+'%';
+    totalClassEl.textContent = classify(pct);
     return pct;
   }
   Object.values(inputs).forEach(i=>i.addEventListener('input',recompute));
@@ -633,10 +653,29 @@ async function openSubmission(rec){
 
   const ansCard = el('section',{class:'card'});
   ansCard.appendChild(el('h2',{},'Respostas completas'));
+  ansCard.appendChild(el('p',{class:'sec-hint'},"Marque \u201cCorreto\u201d nas perguntas que o aluno acertou. A pontuação de cada área acima é recalculada automaticamente com base nessas marcações — você ainda pode ajustar os números manualmente depois. Dados pessoais e crenças não entram na pontuação."));
+  function recomputeFromChecks(){
+    const corrects = {};
+    Object.keys(QUESTION_AREA).forEach(k=>{
+      if(currentChecks[k]){ const a=QUESTION_AREA[k]; corrects[a]=(corrects[a]||0)+1; }
+    });
+    SCORE_AREAS.forEach(([key,,max])=>{
+      const total = AREA_TOTALS[key]||0;
+      if(total>0){ inputs[key].value = Math.round(((corrects[key]||0)/total)*max); }
+    });
+    recompute();
+  }
   Object.keys(labels).forEach(key=>{
     const val = formatAnswer(rec.answers[key]);
-    const qa = el('div',{class:'qa'},
-      el('div',{class:'q'},labels[key]),
+    const top = el('div',{style:'display:flex;justify-content:space-between;align-items:flex-start;gap:10px;'});
+    top.appendChild(el('div',{class:'q'},labels[key]));
+    if(QUESTION_AREA[key]){
+      const cb = el('input',{type:'checkbox'});
+      cb.checked = !!currentChecks[key];
+      cb.addEventListener('change', ()=>{ currentChecks[key]=cb.checked; recomputeFromChecks(); });
+      top.appendChild(el('label',{style:'display:flex;align-items:center;gap:4px;font-size:11.5px;color:var(--ink-soft);white-space:nowrap;cursor:pointer;'}, cb, 'Correto'));
+    }
+    const qa = el('div',{class:'qa'}, top,
       el('div',{class: val? 'a':'a empty'}, val || '(sem resposta)')
     );
     ansCard.appendChild(qa);
@@ -644,13 +683,13 @@ async function openSubmission(rec){
   box.appendChild(ansCard);
 }
 
-async function saveCorrection(rec, inputs, totalBox){
+async function saveCorrection(rec, inputs, totalBox, checks){
   const scores = {};
   SCORE_AREAS.forEach(([key,,max])=>{ const v=parseFloat(inputs[key].value); scores[key]= isNaN(v)?0:Math.min(v,max); });
   const maxSum = SCORE_AREAS.reduce((s,a)=>s+a[2],0);
   const sum = Object.values(scores).reduce((a,b)=>a+b,0);
   const pct = Math.round((sum/maxSum)*100);
-  const record = {type:'correction', id:rec.id, studentName:rec.studentName, scores, totalPercent:pct, classification:classify(pct), correctedAt:new Date().toISOString()};
+  const record = {type:'correction', id:rec.id, studentName:rec.studentName, scores, checks:checks||{}, totalPercent:pct, classification:classify(pct), correctedAt:new Date().toISOString()};
   try{
     await fetch(APPS_SCRIPT_URL, {
       method:'POST',
